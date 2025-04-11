@@ -5,124 +5,139 @@
 {% block title %}{{ step_title }}{% endblock %}
 
 {% block content %}
-  <h2>{{ step_title }}</h2>
-  <p><strong>Type d'analyse :</strong> {{ scenario_request.get_request_type_display }}</p>
-  <p><strong>Description :</strong> {{ scenario_request.user_description|default:"N/A" }}</p>
-  <p><strong>Statut :</strong> <strong style="color: {% if scenario_request.status == 'completed' %}green{% elif scenario_request.status == 'failed' %}red{% else %}orange{% endif %};">{{ scenario_request.get_status_display }}</strong></p>
-  <hr>
-
-  {# Afficher seulement si l'analyse est terminée et réussie #}
+<h2>{{ step_title }}</h2>
+<p>
+    <strong>Type d'analyse :</strong> {{ scenario_request.get_request_type_display }}
+</p>
+<p>
+    <strong>Description :</strong> {{ scenario_request.user_description|default:"N/A" }}
+</p>
+<p>
+    <strong>Statut :</strong>
+    <strong style="color: {% if scenario_request.status == 'completed' %}green{% elif scenario_request.status == 'failed' %}red{% else %}orange{% endif %};">{{ scenario_request.get_status_display }}</strong>
+</p>
+<hr>
+{# Afficher seulement si l'analyse est terminée et réussie #}
   {% if scenario_request.status == 'completed' and analysis_data %}
 
     {# 1. Synthèse #}
-    <section>
-      <h3>Synthèse</h3>
-      <p>{{ analysis_data.synthese|default:"Synthèse non disponible."|linebreaksbr }}</p>
-    </section>
-    <hr>
-
-    {# 2. Prévisions et Graphique #}
-    <section>
-      <h3>Analyse Prospective (3 ans)</h3>
-      {% if chart_data %}
+<section>
+    <h3>Synthèse</h3>
+    <p>{{ analysis_data.synthese|default:"Synthèse non disponible."|linebreaksbr }}</p>
+</section>
+<hr>
+{# 2. Prévisions et Graphique #}
+<section>
+    <h3>Analyse Prospective (3 ans)</h3>
+    {% if chart_data %}
         {# Conteneur pour le graphique #}
-        <div style="width: 80%; max-width: 600px; margin: 20px auto;">
-            <canvas id="forecastChart"></canvas>
-        </div>
-        <p><strong>Hypothèses Clés :</strong> {{ analysis_data.hypotheses_previsions|default:"Non spécifiées." }}</p>
-      {% else %}
-        <p>Données de prévisions non disponibles pour le graphique.</p>
-      {% endif %}
+    <div style="width: 80%; max-width: 600px; margin: 20px auto;">
+        <canvas id="forecastChart"></canvas>
+    </div>
+    <p>
+        <strong>Hypothèses Clés :</strong> {{ analysis_data.hypotheses_previsions|default:"Non spécifiées." }}
+    </p>
+    {% else %}
+    <p>Données de prévisions non disponibles pour le graphique.</p>
+    {% endif %}
 
       {# Tableau des prévisions (optionnel, redondant avec graphique) #}
       {% if analysis_data.previsions_3_ans %}
-      <h4>Tableau des prévisions :</h4>
-      <table border="1" style="width:100%; border-collapse: collapse;">
+    <h4>Tableau des prévisions :</h4>
+    <table border="1" style="width:100%; border-collapse: collapse;">
         <thead>
-          <tr>
-            <th>Année</th>
-            <th>CA Prévisionnel (€)</th>
-            <th>Charges Prévisionnelles (€)</th>
-            <th>Marge Brute Prévisionnelle (€)</th>
-          </tr>
+            <tr>
+                <th>Année</th>
+                <th>CA Prévisionnel (€)</th>
+                <th>Charges Prévisionnelles (€)</th>
+                <th>Marge Brute Prévisionnelle (€)</th>
+            </tr>
         </thead>
         <tbody>
-          {% for prev in analysis_data.previsions_3_ans %}
-          <tr>
-            <td>{{ prev.annee }}</td>
-            <td style="text-align: right;">{{ prev.ca_prev|floatformat:2 }}</td>
-            <td style="text-align: right;">{{ prev.charges_prev|floatformat:2 }}</td>
-            <td style="text-align: right;">{{ prev.marge_brute_prev|floatformat:2 }}</td>
-          </tr>
-          {% endfor %}
+            {% for prev in analysis_data.previsions_3_ans %}
+            <tr>
+                <td>{{ prev.annee }}</td>
+                <td style="text-align: right;">{{ prev.ca_prev|floatformat:2 }}</td>
+                <td style="text-align: right;">{{ prev.charges_prev|floatformat:2 }}</td>
+                <td style="text-align: right;">{{ prev.marge_brute_prev|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
         </tbody>
-      </table>
-      {% endif %}
-    </section>
-    <hr>
-
-    {# 3. Risques Clés #}
-    <section>
-      <h3>Risques Clés Identifiés</h3>
-      {% if analysis_data.risques_cles %}
-        <ul>
-          {% for risque in analysis_data.risques_cles %}
-            <li>{{ risque }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>Aucun risque clé identifié.</p>
-      {% endif %}
-    </section>
-    <hr>
-
-    {# 4. Recommandations #}
-    <section>
-      <h3>Recommandations</h3>
-      {% if analysis_data.recommandations %}
-        <ul>
-          {% for reco in analysis_data.recommandations %}
-            <li>
-              <span style="font-weight: bold; color: {% if '[VERT]' in reco.niveau %}green{% elif '[ORANGE]' in reco.niveau %}orange{% elif '[ROUGE]' in reco.niveau %}red{% else %}black{% endif %};">
+    </table>
+    {% endif %}
+</section>
+<hr>
+{# 3. Risques Clés #}
+<section>
+    <h3>Risques Clés Identifiés</h3>
+    {% if analysis_data.risques_cles %}
+    <ul>
+        {% for risque in analysis_data.risques_cles %}
+        <li>{{ risque }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Aucun risque clé identifié.</p>
+    {% endif %}
+</section>
+<hr>
+{# 4. Recommandations #}
+<section>
+    <h3>Recommandations</h3>
+    {% if analysis_data.recommandations %}
+    <ul>
+        {% for reco in analysis_data.recommandations %}
+        <li>
+            <span style="font-weight: bold; color: {% if '[VERT]' in reco.niveau %}green{% elif '[ORANGE]' in reco.niveau %}orange{% elif '[ROUGE]' in reco.niveau %}red{% else %}black{% endif %};">
                 {{ reco.niveau|default:"[INFO]" }}
-              </span>
-              {{ reco.recommendation }}
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>Aucune recommandation spécifique fournie.</p>
-      {% endif %}
-    </section>
-    <hr>
-
-    {# Boutons Téléchargement (Seront activés en Phase 6) #}
-    <section>
-        <h3>Télécharger le Rapport</h3>
-        <a href="#" class="button disabled">Télécharger PDF (Bientôt)</a>
-        <a href="#" class="button disabled">Télécharger Excel (Bientôt)</a>
-    </section>
-
-  {# Gérer les autres statuts #}
+            </span>
+            {{ reco.recommendation }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Aucune recommandation spécifique fournie.</p>
+    {% endif %}
+</section>
+<hr>
+{# Section Téléchargement - MODIFIÉE #}
+<section>
+    <h3>Télécharger le Rapport</h3>
+    {# Liens actifs seulement si l'analyse est complétée #}
+    <a href="{% url 'download_report' scenario_request.id 'pdf' %}" class="button">Télécharger PDF</a>
+    <a href="{% url 'download_report' scenario_request.id 'excel' %}" class="button">Télécharger Excel</a>
+</section>
+{# Gérer les autres statuts #}
   {% elif is_processing %}
-    <p style="color: orange;">Votre analyse est en cours de traitement. Cette page peut se rafraîchir ou vous pouvez revenir plus tard.</p>
-  {% elif has_failed %}
-    <p style="color: red;">L'analyse a échoué. Veuillez vérifier les détails ou contacter le support si le problème persiste.</p>
-  {% else %}
-    <p>Les résultats de l'analyse ne sont pas encore disponibles ou la demande n'a pas été trouvée.</p>
-  {% endif %}
-
-  <p><a href="{% url 'home' %}">Retour à l'accueil</a></p>
-
+<p style="color: orange;">Votre analyse est en cours de traitement. Cette page peut se rafraîchir ou vous pouvez revenir plus tard.</p>
+{# ... (Message traitement en cours) ... #}
+    {# Optionnel: Masquer ou désactiver les boutons de téléchargement ici #}
+<section>
+    <h3>Télécharger le Rapport</h3>
+    <a href="#" class="button disabled">Télécharger PDF (En cours...)</a>
+    <a href="#" class="button disabled">Télécharger Excel (En cours...)</a>
+</section>
+{% elif has_failed %}
+<p style="color: red;">L'analyse a échoué. Veuillez vérifier les détails ou contacter le support si le problème persiste.</p>
+{# Optionnel: Masquer ou désactiver les boutons de téléchargement ici #}
+     <section>
+        <h3>Télécharger le Rapport</h3>
+        <p>Téléchargement non disponible car l'analyse a échoué.</p>
+    </section>
+{% else %}
+<p>Les résultats de l'analyse ne sont pas encore disponibles ou la demande n'a pas été trouvée.</p>
+{% endif %}
+<p>
+    <a href="{% url 'home' %}">Retour à l'accueil</a>
+</p>
 {% endblock %}
 
 {% block scripts %} {# Ajouter un bloc pour les scripts JS spécifiques à la page #}
   {# Inclure Chart.js (depuis un CDN ou localement) #}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  {# Script pour initialiser le graphique si les données sont là #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{# Script pour initialiser le graphique si les données sont là #}
   {% if chart_data %}
-  <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
       const ctx = document.getElementById('forecastChart').getContext('2d');
 
@@ -194,6 +209,6 @@
         }
       });
     });
-  </script>
-  {% endif %}
+</script>
+{% endif %}
 {% endblock %}

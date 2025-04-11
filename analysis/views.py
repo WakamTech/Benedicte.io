@@ -12,6 +12,10 @@ from .services import perform_analysis  # Importez le service
 import logging  # Importer logging
 from .models import ScenarioRequest, ScenarioResult # Assurez-vous que ScenarioResult est importé
 import json
+from datetime import datetime # Importez la CLASSE datetime depuis le MODULE datetime
+from django.http import HttpResponse, Http404 # Importer HttpResponse, Http404
+from .report_utils import generate_pdf_report, generate_excel_report # Importer les nouvelles fonctions
+
 logger = logging.getLogger(__name__)  # Initialiser logger pour les vues
 
 
@@ -148,3 +152,45 @@ def display_dashboard(request, request_id):
 
     # Si completed (ou autre), affiche le dashboard normalement
     return render(request, 'analysis/dashboard.html', context)
+
+@login_required
+def download_report_view(request, request_id, format):
+    """Gère le téléchargement du rapport PDF ou Excel."""
+    scenario_request = get_object_or_404(ScenarioRequest, id=request_id, user=request.user)
+
+    # Vérifier si l'analyse est terminée
+    if scenario_request.status != 'completed':
+        logger.warning(f"Tentative de téléchargement pour demande {request_id} non terminée (statut: {scenario_request.status}).")
+        # Rediriger vers dashboard ou afficher une erreur ?
+        # return redirect('dashboard', request_id=request_id)
+        raise Http404("Le rapport n'est pas encore disponible ou l'analyse a échoué.")
+
+    try:
+        analysis_data = scenario_request.result.generated_data
+    except ScenarioResult.DoesNotExist:
+        logger.error(f"Aucun résultat trouvé pour la demande complétée {request_id}.")
+        raise Http404("Les données d'analyse pour ce rapport sont introuvables.")
+
+    filename_base = f"analyse_saas_{scenario_request.id}_{datetime.now().strftime('%Y%m%d')}"
+
+    if format == 'pdf':
+        buffer = generate_pdf_report(analysis_data, scenario_request)
+        if buffer is None: # Gérer l'erreur de génération PDF
+             logger.error(f"La génération PDF a échoué pour la demande {request_id}.")
+             raise Http404("Erreur lors de la génération du rapport PDF.")
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename_base}.pdf"'
+        logger.info(f"Téléchargement PDF pour demande {request_id} par utilisateur {request.user.id}")
+        return response
+
+    elif format == 'excel':
+        buffer = generate_excel_report(analysis_data, scenario_request)
+        content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response = HttpResponse(buffer, content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{filename_base}.xlsx"'
+        logger.info(f"Téléchargement Excel pour demande {request_id} par utilisateur {request.user.id}")
+        return response
+
+    else:
+        logger.warning(f"Format de téléchargement inconnu demandé: {format} pour demande {request_id}.")
+        raise Http404("Format de fichier non supporté.")
