@@ -3,6 +3,7 @@ import requests
 import base64
 import json
 import logging
+import time # Pour simuler un délai
 from datetime import datetime
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -313,3 +314,62 @@ def perform_analysis(scenario_request_id):
         except ScenarioRequest.DoesNotExist:
             pass # La requête n'existait peut-être pas
         return False # Échec
+
+# --- Données Fictives pour Simulation ---
+
+MOCK_ANALYSIS_RESULT_JSON = {
+  "synthese": "Simulation: L'entreprise montre une croissance stable du CA mais des charges variables élevées. Le nouveau projet semble prometteur mais nécessite une gestion prudente des coûts.",
+  "previsions_3_ans": [
+    {"annee": "N+1", "ca_prev": 115000.00, "charges_prev": 80000.00, "marge_brute_prev": 35000.00},
+    {"annee": "N+2", "ca_prev": 130000.00, "charges_prev": 88000.00, "marge_brute_prev": 42000.00},
+    {"annee": "N+3", "ca_prev": 145000.00, "charges_prev": 95000.00, "marge_brute_prev": 50000.00}
+  ],
+  "hypotheses_previsions": "Simulation: Croissance CA simulée à +15% N+1, +13% N+2, +11.5% N+3. Charges augmentent de 10% N+1 puis 8% par an.",
+  "risques_cles": [
+    "Simulation: Dépendance forte au produit principal.",
+    "Simulation: Augmentation imprévue du coût des matières premières.",
+    "Simulation: Arrivée d'un nouveau concurrent local."
+  ],
+  "recommandations": [
+    {"recommendation": "Simulation: Diversifier l'offre de produits/services pour réduire la dépendance.", "niveau": "[VERT]"},
+    {"recommendation": "Simulation: Renégocier les contrats fournisseurs ou chercher des alternatives pour maîtriser les coûts variables.", "niveau": "[ORANGE]"},
+    {"recommendation": "Simulation: Lancer une campagne marketing ciblée pour renforcer la notoriété face à la concurrence.", "niveau": "[VERT]"}
+  ]
+}
+
+# --- Fonction de Simulation ---
+
+def create_mock_analysis(scenario_request_id):
+    """Simule une analyse réussie en créant un résultat avec des données fictives."""
+    logger.info(f"Début SIMULATION analyse pour demande {scenario_request_id}")
+    try:
+        scenario_request = get_object_or_404(ScenarioRequest, id=scenario_request_id)
+        # Mettre à jour statut
+        scenario_request.status = 'processing'
+        scenario_request.save()
+
+        # Simuler un délai de traitement
+        time.sleep(2) # Attend 2 secondes
+
+        # Créer ou mettre à jour ScenarioResult avec les données MOCK
+        ScenarioResult.objects.update_or_create(
+            request=scenario_request,
+            defaults={'generated_data': MOCK_ANALYSIS_RESULT_JSON} # Utilise le JSON fictif
+        )
+
+        # Mettre à jour le statut final
+        scenario_request.status = 'completed'
+        scenario_request.save()
+        logger.info(f"SIMULATION analyse terminée avec succès pour demande {scenario_request_id}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Échec de la SIMULATION d'analyse pour demande {scenario_request_id}: {e}")
+        try:
+            scenario_request = ScenarioRequest.objects.get(id=scenario_request_id)
+            scenario_request.status = 'failed'
+            scenario_request.save()
+        except ScenarioRequest.DoesNotExist:
+            pass
+        return False
+

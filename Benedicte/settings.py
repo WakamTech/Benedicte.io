@@ -26,6 +26,9 @@ env = environ.Env(
 # Lecture du fichier .env
 environ.Env.read_env(BASE_DIR / '.env')
 
+# Mode de simulation pour l'analyse (True pour utiliser les données fictives)
+USE_MOCK_ANALYSIS = env.bool('USE_MOCK_ANALYSIS', default=True) # True par défaut pour dev sans clés
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -35,9 +38,9 @@ SECRET_KEY = "django-insecure-q%h2quy_f^ford#18b24z-z%k^1fxyb@i-w&oz-a@3%sbngjej
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-INSEE_CONSUMER_KEY = env('INSEE_CONSUMER_KEY')
-INSEE_CONSUMER_SECRET = env('INSEE_CONSUMER_SECRET')
-OPENAI_API_KEY = env('OPENAI_API_KEY')
+INSEE_CONSUMER_KEY = env('INSEE_CONSUMER_KEY', default=None) # Ajout de default=None
+INSEE_CONSUMER_SECRET = env('INSEE_CONSUMER_SECRET', default=None) # Ajout de default=None
+OPENAI_API_KEY = env('OPENAI_API_KEY', default=None) # Ajout de default=None
 
 ALLOWED_HOSTS = []
 
