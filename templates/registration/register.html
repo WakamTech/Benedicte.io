@@ -1,0 +1,14 @@
+<!-- templates/registration/register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+  <h2>Inscription</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }} {# Affiche le formulaire avec chaque champ dans un paragraphe #}
+    <button type="submit">S'inscrire</button>
+  </form>
+  <p>Déjà un compte ? <a href="{% url 'login' %}">Se connecter</a></p>
+{% endblock %}

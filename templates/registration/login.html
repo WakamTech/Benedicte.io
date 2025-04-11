@@ -1,0 +1,22 @@
+<!-- templates/registration/login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+  <h2>Connexion</h2>
+  {% if form.errors %}
+    <p style="color: red;">Votre nom d'utilisateur et mot de passe ne correspondent pas. Veuillez réessayer.</p>
+  {% endif %}
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Se connecter</button>
+    {# Ajouter un paramètre 'next' pour rediriger après connexion si besoin #}
+    <input type="hidden" name="next" value="{{ next }}">
+  </form>
+  <p>Pas encore de compte ? <a href="{% url 'register' %}">S'inscrire</a></p>
+  {# Optionnel : Lien mot de passe oublié si vous l'implémentez plus tard #}
+  {# <p><a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p> #}
+{% endblock %}

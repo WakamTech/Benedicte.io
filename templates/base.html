@@ -1,17 +1,34 @@
 <!-- templates/base.html -->
+{% load static %} {# Important pour utiliser {% static %} #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Mon SaaS{% endblock %}</title>
-    <!-- Link CSS files here -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}"> {# Exemple #}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     <header>
-        <!-- Header content (nav bar, etc.) -->
-        <h1>Mon Application SaaS</h1>
+       <h1><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">Mon Application SaaS</a></h1>
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li><span>Bonjour, {{ user.username }}</span></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">Se déconnecter</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Connexion</a></li>
+                    <li><a href="{% url 'register' %}">Inscription</a></li>
+                {% endif %}
+                {# Ajoutez d'autres liens de navigation si nécessaire #}
+            </ul>
+        </nav>
+        <hr> {# Séparateur visuel simple #}
     </header>
 
     <main>
@@ -21,11 +38,10 @@
     </main>
 
     <footer>
-        <!-- Footer content -->
+        <hr> {# Séparateur visuel simple #}
         <p>© 2024 Mon Entreprise</p>
     </footer>
 
-    <!-- Link JS files here -->
-    <script src="{% static 'js/main.js' %}"></script> {# Exemple #}
+    <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+  <h2>Bienvenue !</h2>
+  {% if user.is_authenticated %}
+    <p>Bonjour, {{ user.username }} !</p>
+    <p>Vous êtes connecté.</p>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit">Se déconnecter</button>
+    </form>
+  {% else %}
+    <p>Vous n'êtes pas connecté.</p>
+    <p><a href="{% url 'login' %}">Se connecter</a> ou <a href="{% url 'register' %}">S'inscrire</a></p>
+  {% endif %}
+{% endblock %}
