@@ -1,14 +1,106 @@
 <!-- templates/company/onboarding_step.html -->
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ step_title }}{% endblock %}
 
 {% block content %}
-  <h2>{{ step_title }}</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Suivant</button>
-    {# Optionnel: Ajouter un bouton Précédent si nécessaire #}
-  </form>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7"> {# Un peu plus large pour ce type de formulaire #}
+        <div class="card shadow-sm border-light mb-4">
+            <div class="card-header bg-light">
+                {# Optionnel: Ajouter une barre de progression si pertinent pour le multi-étapes #}
+                <h2 class="h4 card-title mb-0">{{ step_title }}</h2>
+            </div>
+            <div class="card-body p-4">
+                {# Affichage des erreurs générales #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                       <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                       <div>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Formulaire stylisé champ par champ #}
+                <form method="post" novalidate> {# novalidate pour laisser Django gérer la validation #}
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span> {# Indiquer les champs requis #}
+                                {% endif %}
+                            </label>
+
+                            {# Gestion spécifique pour différents types de champs si nécessaire #}
+                            {% if field.field.widget.input_type == 'select' %}
+                                <select name="{{ field.html_name }}"
+                                        id="{{ field.id_for_label }}"
+                                        class="form-select {% if field.errors %}is-invalid{% endif %}"
+                                        {% if field.field.required %}required{% endif %}
+                                        aria-describedby="{{ field.id_for_label }}_helptext {% if field.errors %}{{ field.id_for_label }}_errors{% endif %}">
+                                        {# Boucle sur les options du select #}
+                                        {% for value, text in field.field.widget.choices %}
+                                            {# Comparaison simplifiée pour déterminer si l'option doit être sélectionnée #}
+                                            {% with field_value_str=field.value|default_if_none:""|stringformat:"s" option_value_str=value|default_if_none:""|stringformat:"s" %}
+                                                <option value="{{ value|default_if_none:"" }}" {% if field_value_str == option_value_str %}selected{% endif %}>
+                                                    {{ text }}
+                                                </option>
+                                            {% endwith %}
+                                        {% endfor %}
+                                </select>
+                            {% elif field.field.widget.input_type == 'textarea' %}
+                                 <textarea name="{{ field.html_name }}"
+                                          id="{{ field.id_for_label }}"
+                                          class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                          rows="3" {# Ou basé sur widget attrs #}
+                                          placeholder="{{ field.label }}"
+                                          {% if field.field.required %}required{% endif %}
+                                           aria-describedby="{{ field.id_for_label }}_helptext {% if field.errors %}{{ field.id_for_label }}_errors{% endif %}">{{ field.value|default:'' }}</textarea>
+                            {% else %} {# Cas général pour input text, number, email etc. #}
+                                <input type="{{ field.field.widget.input_type }}"
+                                       name="{{ field.html_name }}"
+                                       id="{{ field.id_for_label }}"
+                                       class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                       placeholder="{{ field.label }}"
+                                       {% if field.field.required %}required{% endif %}
+                                       value="{{ field.value|default:'' }}"
+                                       aria-describedby="{{ field.id_for_label }}_helptext {% if field.errors %}{{ field.id_for_label }}_errors{% endif %}">
+                            {% endif %}
+
+                            {# Affichage des erreurs spécifiques au champ #}
+                            {% if field.errors %}
+                                <div id="{{ field.id_for_label }}_errors" class="invalid-feedback">
+                                    {% for error in field.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {# Affichage du texte d'aide #}
+                            {% if field.help_text %}
+                                <div id="{{ field.id_for_label }}_helptext" class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    {# Boutons de navigation #}
+                    <div class="d-flex justify-content-end gap-2 mt-4"> {# Alignés à droite #}
+                        {# Mettre ici la logique pour afficher "Précédent" si ce n'est pas la première étape #}
+                        {# Exemple: {% if not first_step %} <a href="..." class="btn btn-secondary">Précédent</a> {% endif %} #}
+
+                        <button type="submit" class="btn btn-primary">
+                           Suivant <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </form>
+            </div> {# Fin card-body #}
+        </div> {# Fin card #}
+    </div> {# Fin col #}
+</div> {# Fin row #}
 {% endblock %}

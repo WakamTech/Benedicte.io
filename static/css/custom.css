@@ -1,0 +1,26 @@
+/* static/css/custom.css */
+:root { /* Définir des variables CSS */
+    --bs-primary: #005A9C;
+    --bs-primary-rgb: 0, 90, 156; /* Nécessaire pour les couleurs RGBA de Bootstrap */
+    --bs-link-color: #005A9C; /* Changer couleur des liens standards */
+    --bs-link-hover-color: #003d6b; /* Couleur au survol */
+  }
+  
+  /* Surcharger la couleur du bouton primaire */
+  .btn-primary {
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #004a80; /* Un peu plus foncé au survol */
+    --bs-btn-hover-border-color: #004a80;
+    --bs-btn-active-bg: #003d6b;
+    --bs-btn-active-border-color: #003d6b;
+    --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+  }
+  
+  /* Assurer que la navbar utilise la couleur primaire si désiré (au lieu de bg-dark) */
+  /* .navbar { background-color: var(--bs-primary) !important; } */
+  /* .navbar-dark .navbar-brand, .navbar-dark .nav-link { color: rgba(255, 255, 255, 0.85); } */
+  /* .navbar-dark .nav-link:hover { color: #fff; } */
+  /* .navbar-dark .navbar-toggler { border-color: rgba(255, 255, 255, 0.1); } */
+  
+  /* Vous pouvez ajouter d'autres surcharges ici */

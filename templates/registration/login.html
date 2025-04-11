@@ -1,22 +1,95 @@
 <!-- templates/registration/login.html -->
 {% extends 'base.html' %}
+{% load static %} {# Si vous utilisez des icônes ou CSS spécifiques #}
 
 {% block title %}Connexion{% endblock %}
 
 {% block content %}
-  <h2>Connexion</h2>
-  {% if form.errors %}
-    <p style="color: red;">Votre nom d'utilisateur et mot de passe ne correspondent pas. Veuillez réessayer.</p>
-  {% endif %}
+<div class="row justify-content-center mt-lg-5"> {# mt-lg-5 ajoute de la marge en haut sur grands écrans #}
+    <div class="col-md-8 col-lg-6 col-xl-5"> {# Contrôle la largeur max #}
+        <div class="card shadow-sm border-light"> {# bordure légère optionnelle #}
+            <div class="card-body p-4 p-md-5"> {# Plus de padding interne #}
+                <h2 class="card-title text-center fw-bold mb-4">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Connexion
+                </h2>
 
-  <form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Se connecter</button>
-    {# Ajouter un paramètre 'next' pour rediriger après connexion si besoin #}
-    <input type="hidden" name="next" value="{{ next }}">
-  </form>
-  <p>Pas encore de compte ? <a href="{% url 'register' %}">S'inscrire</a></p>
-  {# Optionnel : Lien mot de passe oublié si vous l'implémentez plus tard #}
-  {# <p><a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p> #}
+                {# Affichage des erreurs non liées à un champ spécifique ou des erreurs générales #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                       <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                       <div>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}<br> {# Retour à la ligne si plusieurs erreurs #}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% elif form.errors and not form.non_field_errors %}
+                     {# Affiche une erreur générique si des erreurs de champ existent mais pas d'erreur générale #}
+                     <div class="alert alert-danger d-flex align-items-center" role="alert">
+                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                         <div>Vos identifiants sont incorrects ou un champ est invalide. Veuillez réessayer.</div>
+                     </div>
+                {% endif %}
+
+                {# Formulaire stylisé champ par champ #}
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    {# Champ caché 'next' pour la redirection après connexion #}
+                    <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+                    {# Itération sur les champs du formulaire #}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {# Utilisation d'un wrapper pour icône éventuelle (optionnel) #}
+                            <div class="input-group {% if field.errors %}has-validation{% endif %}"> {# has-validation pour le positionnement correct du message d'erreur avec input-group #}
+                                {# Icône optionnelle basée sur le nom du champ #}
+                                {% if field.name == 'username' %}
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                {% elif field.name == 'password' %}
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                {% endif %}
+
+                                <input type="{{ field.field.widget.input_type }}"
+                                       name="{{ field.html_name }}"
+                                       id="{{ field.id_for_label }}"
+                                       class="form-control {% if field.errors %}is-invalid{% endif %}" {# Classe is-invalid si erreur #}
+                                       placeholder="{{ field.label }}" {# Placeholder utilisant le label #}
+                                       {% if field.field.required %}required{% endif %}
+                                       value="{{ field.value|default:'' }}">
+
+                                {# Affichage des erreurs spécifiques au champ #}
+                                {% if field.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div> {# Fin input-group #}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    {# Bouton de soumission #}
+                    <div class="d-grid gap-2 mt-4"> {# d-grid pour un bouton pleine largeur #}
+                       <button type="submit" class="btn btn-primary btn-lg">
+                           <i class="bi bi-check-lg me-1"></i> Se connecter
+                       </button>
+                    </div>
+                </form>
+
+                {# Liens additionnels #}
+                <hr class="my-4"> {# my-4 ajoute marge verticale #}
+                 <div class="text-center">
+                    <p class="mb-1">Pas encore de compte ? <a href="{% url 'register' %}" class="fw-bold">S'inscrire</a></p>
+                    {# Lien mot de passe oublié (à activer si la fonctionnalité est implémentée) #}
+                    {# <p><a href="#">Mot de passe oublié ?</a></p> #}
+                 </div>
+            </div> {# Fin card-body #}
+        </div> {# Fin card #}
+    </div> {# Fin col #}
+</div> {# Fin row #}
 {% endblock %}

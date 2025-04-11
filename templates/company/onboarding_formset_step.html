@@ -1,48 +1,298 @@
 <!-- templates/company/onboarding_formset_step.html -->
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ step_title }}{% endblock %}
 
 {% block content %}
-  <h2>{{ step_title }}</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ formset.management_form }} {# Important for formset management #}
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9"> {# Encore plus large pour potentiellement plusieurs formulaires #}
 
-    {% for form in formset %}
-      <div class="formset-row" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-          {{ form.id }} {# Hidden ID field for existing items #}
-          <h4>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %}</h4>
-          {{ form.as_p }}
-          {% if formset.can_delete %}
-            <label for="{{ form.DELETE.id_for_label }}">Supprimer:</label>
-            {{ form.DELETE }}
-          {% endif %}
-      </div>
-    {% endfor %}
+        <form method="post" novalidate id="main-formset">
+            {% csrf_token %}
+            {# IMPORTANT: Management form pour la gestion du formset par Django #}
+            {{ formset.management_form }}
 
-    <button type="submit">Suivant</button>
-    {# Optionnel: Ajouter bouton pour ajouter plus de formulaires via JS #}
-    {# Optionnel: Ajouter un bouton Précédent si nécessaire #}
-  </form>
+            <div class="card shadow-sm border-light mb-4">
+                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h2 class="h4 card-title mb-0">{{ step_title }}</h2>
+                    {# Bouton pour ajouter un formulaire (via JS) #}
+                    <button type="button" class="btn btn-sm btn-outline-success" id="add-form">
+                        <i class="bi bi-plus-lg me-1"></i> Ajouter un élément
+                    </button>
+                </div>
 
-  {# Simple script to hide/show delete checkbox more nicely #}
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.formset-row').forEach(function(row) {
-            const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
-            if (deleteCheckbox) {
-                const deleteLabel = row.querySelector('label[for="' + deleteCheckbox.id + '"]');
-                if (deleteCheckbox.checked) {
-                    // Optionally style rows marked for deletion
-                    row.style.opacity = '0.5';
-                }
-                // Optional: Hide the checkbox itself and use a button or link
-                // deleteCheckbox.style.display = 'none';
-                // deleteLabel.style.display = 'none';
-                // Add a delete button here if you hide the checkbox
+                <div class="card-body p-4">
+                    {# Affichage des erreurs générales du formset #}
+                    {% if formset.non_form_errors %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                           <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                           <div>
+                                {% for error in formset.non_form_errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {# Conteneur pour les formulaires du formset #}
+                    <div id="formset-container">
+                        {% for form in formset %}
+                            {# Utiliser une carte pour chaque formulaire imbriqué #}
+                            <div class="card mb-3 formset-form {% if form.errors %}border-danger{% endif %}">
+                                {# Hidden ID field pour les items existants #}
+                                {{ form.id }}
+
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <!-- <h5 class="card-subtitle mb-0 text-muted">
+                                            {% if form.instance.pk %}
+                                                Élément existant #{{ forloop.counter }}
+                                            {% else %}
+                                                Nouvel élément #{{ forloop.counter }}
+                                            {% endif %}
+                                        </h5> -->
+                                        {# Bouton de suppression pour les formulaires qui peuvent être supprimés #}
+                                        {% if formset.can_delete and form.instance.pk %} {# Afficher seulement pour les existants #}
+                                            <div class="form-check ms-3">
+                                                {{ form.DELETE }} {# La checkbox cachée gère la logique #}
+                                                <label class="form-check-label btn btn-sm btn-outline-danger delete-button"
+                                                       for="{{ form.DELETE.id_for_label }}"
+                                                       data-bs-toggle="tooltip" title="Marquer pour suppression">
+                                                       <i class="bi bi-trash"></i>
+                                                </label>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {# Affichage des erreurs spécifiques à ce formulaire imbriqué #}
+                                     {% if form.errors %}
+                                        <div class="alert alert-warning alert-sm p-2" role="alert">
+                                            <small>Veuillez corriger les erreurs pour cet élément.</small>
+                                        </div>
+                                     {% endif %}
+
+                                    {# Itération sur les champs de ce formulaire imbriqué #}
+                                    <div class="row g-3"> {# g-3 pour l'espacement entre colonnes #}
+                                        {% for field in form %}
+                                            {% if field.name != 'id' and field.name != 'DELETE' %} {# Ne pas afficher id et DELETE comme champs normaux #}
+                                                <div class="col-md-6 mb-2"> {# Mettre 2 champs par ligne sur écran moyen+ #}
+                                                    <label for="{{ field.id_for_label }}" class="form-label form-label-sm">
+                                                        {{ field.label }}
+                                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                                    </label>
+                                                    {# Rendu du champ avec les bonnes classes #}
+                                                    {% if field.field.widget.input_type == 'select' %}
+                                                         <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-select form-select-sm {% if field.errors %}is-invalid{% endif %}" {% if field.field.required %}required{% endif %}>
+                                                            {# CORRECTION APPLIQUÉE ICI #}
+                                                            {% for value, text in field.field.widget.choices %}
+                                                                {% with field_value_str=field.value|default_if_none:""|stringformat:"s" option_value_str=value|default_if_none:""|stringformat:"s" %}
+                                                                    <option value="{{ value|default_if_none:"" }}" {% if field_value_str == option_value_str %}selected{% endif %}>
+                                                                        {{ text }}
+                                                                    </option>
+                                                                {% endwith %}
+                                                            {% endfor %}
+                                                        </select>
+                                                    {% else %}
+                                                        <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control form-control-sm {% if field.errors %}is-invalid{% endif %}" placeholder="{{ field.label }}" {% if field.field.required %}required{% endif %} value="{{ field.value|default:'' }}">
+                                                    {% endif %}
+
+                                                    {% if field.errors %}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in field.errors %}{{ error }}{% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if field.help_text %}
+                                                        <div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                     </div> {# Fin row g-3 #}
+                                </div> {# Fin card-body #}
+                            </div> {# Fin card formset-form #}
+                        {% endfor %}
+                    </div> {# Fin formset-container #}
+
+                     {# Template pour les nouveaux formulaires ajoutés par JS (caché initialement) #}
+                    <div id="empty-form" class="card mb-3 formset-form" style="display: none;">
+                         {# Le contenu sera cloné depuis un formulaire existant ou généré par JS #}
+                         <div class="card-body">
+                             <h5 class="card-subtitle mb-2 text-muted">Nouvel élément</h5>
+                             <div class="row g-3">
+                                 {# Les champs seront insérés ici par JS #}
+                             </div>
+                         </div>
+                    </div>
+
+                    {# Boutons de navigation #}
+                    <div class="d-flex justify-content-between mt-4"> {# Boutons aux extrémités #}
+                         {# Mettre ici la logique pour afficher "Précédent" depuis la vue #}
+                         {% comment %}
+                         Exemple: Il faut passer l'URL précédente depuis la vue Django dans le contexte
+                         {% if prev_step_url %}
+                            <a href="{{ prev_step_url }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Précédent</a>
+                         {% else %}
+                            <span></span> {# Placeholder pour maintenir l'alignement #}
+                         {% endif %}
+                         {% endcomment %}
+                         <a href="#" class="btn btn-outline-secondary disabled">Précédent (à lier)</a> {# Placeholder Temporaire #}
+
+                        <button type="submit" class="btn btn-primary">
+                           Suivant <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div> {# Fin card-body principale #}
+            </div> {# Fin card globale #}
+        </form>
+    </div> {# Fin col #}
+</div> {# Fin row #}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }} {# Inclure les scripts du bloc parent si nécessaire #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formsetContainer = document.getElementById('formset-container');
+    const addButton = document.getElementById('add-form');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]'); // Input de management
+    // const emptyFormHtml = document.getElementById('empty-form').innerHTML; // On n'utilise plus le template vide simpliste
+
+    if (!totalFormsInput) {
+        console.error("Management form input 'TOTAL_FORMS' not found!");
+        return; // Ne pas continuer si le management form est absent
+    }
+
+    // Initialisation du compteur basé sur la valeur actuelle de TOTAL_FORMS
+    let formNum = parseInt(totalFormsInput.value);
+
+    if (addButton) {
+        addButton.addEventListener('click', function() {
+            // **Méthode Recommandée (Clonage du dernier formulaire):**
+            const lastForm = formsetContainer.querySelector('.formset-form:last-of-type');
+
+            // S'il n'y a AUCUN formulaire (cas initial où extra=0 et aucun form existant),
+            // on pourrait essayer de cloner le template #empty-form (si on l'avait bien construit)
+            // ou afficher un message. Pour l'instant, on part du principe qu'il y a au moins un form (extra=1 ou data existante).
+            if (!lastForm) {
+                console.warn("Aucun formulaire existant à cloner. Vérifiez 'extra' dans la config formset ou le template #empty-form.");
+                // Alternative: Cloner #empty-form si vous l'avez rendu complet avec les champs et __prefix__
+                // const template = document.getElementById('empty-form');
+                // if (!template) return;
+                // const newForm = template.cloneNode(true);
+                // newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formNum);
+                // // ... nettoyage et ajout ...
+                return;
             }
+
+            const newForm = lastForm.cloneNode(true);
+
+            // Nettoyer le formulaire cloné (enlever les erreurs, vider les valeurs, mettre à jour les ID/names)
+            newForm.classList.remove('border-danger');
+            newForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            newForm.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+            newForm.querySelectorAll('input, select, textarea').forEach(input => {
+                // Vider la valeur (sauf pour les hidden, boutons, et la checkbox DELETE)
+                if (input.type !== 'hidden' && input.type !== 'button' && input.type !== 'submit' && !input.name.endsWith('-DELETE')) {
+                   if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false; // Désélectionner radios/checkboxes (sauf DELETE)
+                   } else if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0; // Sélectionner la première option (souvent vide)
+                   }
+                   else {
+                        input.value = ''; // Vider les autres inputs
+                   }
+                }
+                // Mettre à jour les attributs name et id en utilisant formNum (la valeur actuelle de TOTAL_FORMS avant incrémentation)
+                const name = input.getAttribute('name');
+                const id = input.getAttribute('id');
+                const regex = /-(\d+)-/; // Regex pour trouver le numéro d'index
+                if (name) {
+                    input.setAttribute('name', name.replace(regex, `-${formNum}-`));
+                }
+                if (id) {
+                    input.setAttribute('id', id.replace(regex, `-${formNum}-`));
+                }
+                // S'assurer que la checkbox DELETE est décochée et visible si elle était cachée
+                if (input.name.endsWith('-DELETE')) {
+                    input.checked = false;
+                    input.style.display = ''; // Rendre visible si jamais caché
+                    const deleteLabel = newForm.querySelector(`label[for="${id}"]`);
+                    if(deleteLabel) deleteLabel.style.display = '';
+                }
+            });
+            // Mettre à jour les labels 'for'
+             newForm.querySelectorAll('label').forEach(label => {
+                 const htmlFor = label.getAttribute('for');
+                 const regex = /-(\d+)-/;
+                 if (htmlFor) {
+                     label.setAttribute('for', htmlFor.replace(regex, `-${formNum}-`));
+                 }
+             });
+            // Mettre à jour le titre et supprimer le bouton/label delete pour le nouveau formulaire
+            const title = newForm.querySelector('.card-subtitle');
+            if(title) title.textContent = `Nouvel élément #${formNum + 1}`; // +1 car formNum est l'index base 0
+            const deleteContainer = newForm.querySelector('.form-check'); // Cibler le conteneur de la checkbox delete
+            if (deleteContainer && deleteContainer.querySelector('input[name$="-DELETE"]')) {
+                 deleteContainer.remove(); // Supprimer toute la div de suppression pour les nouveaux formulaires
+            }
+
+
+            formsetContainer.appendChild(newForm);
+
+            // Mettre à jour le nombre total de formulaires dans le management form
+            totalFormsInput.value = formNum + 1;
+            formNum++; // Incrémenter le compteur pour le prochain ajout
+
+             // Ré-initialiser les tooltips pour le nouveau formulaire (si besoin)
+             initializeTooltips(newForm); // Passer le nouveau formulaire pour cibler
+
         });
+    }
+
+    // Fonction pour initialiser ou ré-initialiser les tooltips Bootstrap (ciblée ou globale)
+    function initializeTooltips(container = document) {
+        const tooltipTriggerList = [].slice.call(container.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            // Détruire l'ancien tooltip s'il existe avant d'en créer un nouveau
+            const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+            if (existingTooltip) {
+                existingTooltip.dispose();
+            }
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    // Gestion visuelle de la suppression
+    formsetContainer.addEventListener('change', function(event) {
+        // Clic sur une checkbox DELETE
+        if (event.target.matches('input[type="checkbox"][name$="-DELETE"]')) {
+            const formRow = event.target.closest('.formset-form');
+            const deleteButtonLabel = formRow.querySelector('.delete-button'); // Le label stylé comme un bouton
+            if (event.target.checked) {
+                formRow.classList.add('border-danger', 'opacity-50'); // Style visuel de suppression
+                if(deleteButtonLabel) deleteButtonLabel.classList.add('btn-danger'); // Change le bouton en rouge plein
+                if(deleteButtonLabel) deleteButtonLabel.classList.remove('btn-outline-danger');
+            } else {
+                formRow.classList.remove('border-danger', 'opacity-50');
+                 if(deleteButtonLabel) deleteButtonLabel.classList.remove('btn-danger');
+                 if(deleteButtonLabel) deleteButtonLabel.classList.add('btn-outline-danger'); // Remet le bouton en contour rouge
+            }
+        }
     });
-  </script>
+
+     // Appliquer le style initial aux éléments déjà cochés au chargement
+     document.querySelectorAll('input[type="checkbox"][name$="-DELETE"]:checked').forEach(checkbox => {
+         const formRow = checkbox.closest('.formset-form');
+         const deleteButtonLabel = formRow.querySelector('.delete-button');
+         formRow.classList.add('border-danger', 'opacity-50');
+         if(deleteButtonLabel) deleteButtonLabel.classList.add('btn-danger');
+         if(deleteButtonLabel) deleteButtonLabel.classList.remove('btn-outline-danger');
+     });
+
+     // Initialiser les tooltips au chargement pour les éléments existants
+     initializeTooltips(formsetContainer);
+
+});
+</script>
 {% endblock %}

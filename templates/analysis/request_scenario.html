@@ -1,16 +1,109 @@
 <!-- templates/analysis/request_scenario.html -->
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ step_title }}{% endblock %}
 
 {% block content %}
-  <h2>{{ step_title }}</h2>
-  <p>Veuillez sélectionner le type d'analyse ou décrire votre projet spécifique.</p>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Lancer l'analyse</button>
-     {# Optionnel: Bouton Précédent pour revenir à l'étape des produits #}
-     <a href="{% url 'company_products_step' %}" class="button-secondary">Précédent</a>
-  </form>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7"> {# Même largeur que onboarding_step #}
+        <div class="card shadow-sm border-light mb-4">
+            <div class="card-header bg-light">
+                <h2 class="h4 card-title mb-0">{{ step_title }}</h2>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">Sélectionnez le type d'analyse principal ou décrivez votre objectif spécifique pour affiner les résultats.</p>
+
+                {# Affichage des erreurs générales #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                       <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                       <div>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Formulaire stylisé champ par champ #}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                             <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+                            </label>
+
+                            {% if field.field.widget.input_type == 'select' %}
+                                <select name="{{ field.html_name }}"
+                                        id="{{ field.id_for_label }}"
+                                        class="form-select {% if field.errors %}is-invalid{% endif %}"
+                                        {% if field.field.required %}required{% endif %}
+                                        aria-describedby="{{ field.id_for_label }}_helptext {% if field.errors %}{{ field.id_for_label }}_errors{% endif %}">
+                                     {# Option vide explicite si le champ n'est pas requis #}
+                                     {% if not field.field.required %}
+                                         <option value="">---------</option>
+                                     {% endif %}
+                                     {% for value, text in field.field.widget.choices %}
+                                         <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ text }}</option>
+                                     {% endfor %}
+                                </select>
+                             {% elif field.field.widget.input_type == 'textarea' %}
+                                 <textarea name="{{ field.html_name }}"
+                                          id="{{ field.id_for_label }}"
+                                          class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                          rows="4" {# Un peu plus de hauteur pour la description #}
+                                          placeholder="{{ field.label }}"
+                                          {% if field.field.required %}required{% endif %}
+                                          aria-describedby="{{ field.id_for_label }}_helptext {% if field.errors %}{{ field.id_for_label }}_errors{% endif %}">{{ field.value|default:'' }}</textarea>
+                            {% else %} {# Cas général input #}
+                                 <input type="{{ field.field.widget.input_type }}"
+                                       name="{{ field.html_name }}"
+                                       id="{{ field.id_for_label }}"
+                                       class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                       placeholder="{{ field.label }}"
+                                       {% if field.field.required %}required{% endif %}
+                                       value="{{ field.value|default:'' }}"
+                                       aria-describedby="{{ field.id_for_label }}_helptext {% if field.errors %}{{ field.id_for_label }}_errors{% endif %}">
+                            {% endif %}
+
+                             {# Affichage des erreurs spécifiques au champ #}
+                            {% if field.errors %}
+                                <div id="{{ field.id_for_label }}_errors" class="invalid-feedback">
+                                    {% for error in field.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {# Affichage du texte d'aide #}
+                            {% if field.help_text %}
+                                <div id="{{ field.id_for_label }}_helptext" class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                     {# Boutons de navigation #}
+                    <div class="d-flex justify-content-between mt-4"> {# Alignés aux extrémités #}
+                        {# Bouton Précédent - Lié à l'étape précédente (Produits/Services) #}
+                        <a href="{% url 'company_products_step' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Précédent
+                        </a>
+
+                        {# Bouton Lancer l'analyse #}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i> Lancer l'analyse
+                        </button>
+                    </div>
+
+                </form>
+
+            </div> {# Fin card-body #}
+        </div> {# Fin card #}
+    </div> {# Fin col #}
+</div> {# Fin row #}
 {% endblock %}

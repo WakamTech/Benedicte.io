@@ -1,9 +1,80 @@
 <!-- templates/analysis/processing.html -->
 {% extends 'base.html' %}
-{% block title %}Analyse en cours{% endblock %}
+{% load static %}
+
+{% block title %}Analyse en cours...{% endblock %}
+
 {% block content %}
-  <h2>Analyse en cours...</h2>
-  <p>Votre demande (ID: {{ request_id }}) est en cours de traitement.</p>
-  <p>Veuillez patienter. Cette page pourrait se rafraîchir automatiquement ou vous pouvez revenir plus tard.</p>
-  {# Add a spinner or progress bar later #}
+<div class="container mt-5 text-center"> {# Centre le contenu et ajoute de la marge #}
+
+    <h1 class="h3 mb-3 fw-normal">Analyse en cours...</h1>
+
+    <p class="lead text-muted mb-4">
+        Votre demande d'analyse #{{ request_id }} est en cours de traitement par nos systèmes.
+    </p>
+
+    {# Spinner Bootstrap pour l'indication visuelle #}
+    <div class="spinner-border text-primary mb-4" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Chargement...</span> {# Pour l'accessibilité #}
+    </div>
+
+    <p class="mb-4">
+        Cela peut prendre quelques instants. Vous serez redirigé vers le tableau de bord dès que l'analyse sera terminée.
+    </p>
+
+    <p>
+        <small class="text-muted">Si vous préférez, vous pouvez <a href="{% url 'home' %}" class="link-secondary">retourner à l'accueil</a> et consulter le statut plus tard.</small>
+    </p>
+
+</div>
+
+{# Script pour rafraîchir la page ou vérifier le statut périodiquement #}
+{# Option 1: Simple rafraîchissement de page (moins élégant) #}
+{# <meta http-equiv="refresh" content="15"> #} {# Rafraîchir toutes les 15 secondes #}
+
+{# Option 2: Vérification AJAX (plus complexe mais meilleure UX - nécessite une URL API pour vérifier le statut) #}
+{#
+{% block scripts %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkStatusUrl = `/api/check_status/${request_id}/`; // URL API à créer
+    const dashboardUrl = "{% url 'dashboard' request_id %}";
+    let intervalId = null;
+
+    function checkAnalysisStatus() {
+        fetch(checkStatusUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'completed' || data.status === 'failed') {
+                    // Si terminé ou échec, rediriger vers le dashboard
+                    if (intervalId) clearInterval(intervalId); // Arrêter la vérification
+                    window.location.href = dashboardUrl;
+                } else {
+                    // Sinon, continuer à vérifier (log optionnel)
+                    console.log('Analysis status:', data.status);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking analysis status:', error);
+                // Optionnel: Arrêter la vérification après plusieurs erreurs
+                // if (intervalId) clearInterval(intervalId);
+            });
+    }
+
+    // Vérifier toutes les 5 secondes (ajuster l'intervalle)
+    // intervalId = setInterval(checkAnalysisStatus, 5000);
+
+    // Optionnel: faire une première vérification immédiate
+    // checkAnalysisStatus();
+});
+</script>
+{% endblock %}
+#}
+
 {% endblock %}

@@ -1,55 +1,127 @@
 <!-- templates/home.html -->
 {% extends 'base.html' %}
+{% load static %} {# Assurez-vous que static est chargé #}
 
-{% block title %}Accueil{% endblock %}
+{% block title %}Tableau de Bord Principal{% endblock %}
 
 {% block content %}
-<h2>Bienvenue !</h2>
+
 {% if user.is_authenticated %}
-<p>Bonjour, {{ user.username }} !</p>
-<p>Vous êtes connecté.</p>
-<form method="post" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit">Se déconnecter</button>
-</form>
-<h3>Vos Dernières Analyses :</h3>
-{% with user.scenario_requests.all|slice:":5" as recent_requests %} {# Limite aux 5 dernières #}
-    {% if recent_requests %}
-<ul>
-    {% for req in recent_requests %}
-    <li>
-        Analyse #{{ req.id }} ({{ req.get_request_type_display }}) - Statut: {{ req.get_status_display }}
-            {% if req.status == 'completed' %}
-              -
-        <a href="{% url 'dashboard' req.id %}">Voir Dashboard</a>
-        {% elif req.status == 'pending' or req.status == 'processing' %}
-              -
-        <a href="{% url 'dashboard' req.id %}">Voir Statut</a>
-        {# Lien vers dashboard qui affichera le statut #}
-            {% elif req.status == 'failed' %}
-              -
-        <span style="color:red;">Échec</span>
-        {% endif %}
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>Vous n'avez pas encore demandé d'analyse.</p>
-{% endif %}
-  {% endwith %}
-   {# Lien pour démarrer l'onboarding si pas de profil ? Ou lien vers demande d'analyse ? #}
-<p>
-    <a href="{% url 'company_profile_step' %}" class="button">Commencer/Modifier les infos entreprise</a>
-</p>
-<p>
-    <a href="{% url 'request_scenario' %}" class="button">Demander une nouvelle analyse</a>
-</p>
-{% else %}
-<p>Vous n'êtes pas connecté.</p>
-<p>
-    <a href="{% url 'login' %}">Se connecter</a> ou
-    <a href="{% url 'register' %}">S'inscrire</a>
-</p>
+    {# Message de Bienvenue et Actions Rapides #}
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        {# Utilisation des classes de taille de police Bootstrap #}
+        <h1 class="h2 mb-0">Bienvenue, {{ user.username }} !</h1>
+        <div class="d-flex gap-2 mt-2 mt-md-0"> {# gap-2 ajoute de l'espace entre les boutons #}
+            <a href="{% url 'company_profile_step' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-building me-1"></i> Profil Entreprise
+            </a>
+            <a href="{% url 'request_scenario' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Nouvelle Analyse
+            </a>
+        </div>
+    </div>
+
+    {# Section Dernières Analyses #}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2"></i>Vos Dernières Analyses</h2>
+        </div>
+        <div class="card-body">
+            {% with user.scenario_requests.all|slice:":5" as recent_requests %}
+                {% if recent_requests %}
+                    <ul class="list-group list-group-flush"> {# list-group pour un affichage propre #}
+                        {% for req in recent_requests %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <span class="fw-bold">Analyse #{{ req.id }}</span>
+                                <small class="text-muted ms-2">({{ req.get_request_type_display }})</small>
+                                <br>
+                                {# Statut avec badge Bootstrap #}
+                                Statut :
+                                {% if req.status == 'completed' %}
+                                  <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Terminé</span>
+                                {% elif req.status == 'processing' %}
+                                  <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>En cours</span>
+                                {% elif req.status == 'pending' %}
+                                  <span class="badge bg-secondary"><i class="bi bi-pause-circle me-1"></i>En attente</span>
+                                {% elif req.status == 'failed' %}
+                                  <span class="badge bg-danger"><i class="bi bi-x-octagon me-1"></i>Échec</span>
+                                {% else %}
+                                  <span class="badge bg-info text-dark">{{ req.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2 mt-md-0"> {# Espace pour le bouton sur mobile #}
+                                {% if req.status == 'completed' %}
+                                    <a href="{% url 'dashboard' req.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i> Voir Dashboard
+                                    </a>
+                                {% elif req.status == 'pending' or req.status == 'processing' %}
+                                     <a href="{% url 'dashboard' req.id %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-search me-1"></i> Voir Statut
+                                     </a>
+                                {% endif %}
+                                {# Pas de bouton si Échec pour l'instant #}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                       <i class="bi bi-info-circle me-2"></i>
+                       <div>
+                          Vous n'avez pas encore demandé d'analyse. Cliquez sur "Nouvelle Analyse" pour commencer !
+                       </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+{% else %} {# Cas Utilisateur NON Connecté #}
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Bienvenue sur Benedicte.io</h1>
+        <p class="fs-4 col-md-8 mx-auto">Obtenez des analyses prospectives et des recommandations stratégiques personnalisées pour votre entreprise.</p>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-2">
+           <i class="bi bi-person-plus me-1"></i> Créer un Compte
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">
+           <i class="bi bi-box-arrow-in-right me-1"></i> Se Connecter
+        </a>
+      </div>
+    </div>
+
+    {# Optionnel: Ajouter des cartes ou sections présentant les fonctionnalités #}
+    <div class="row text-center mt-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0">
+                <div class="card-body">
+                    <i class="bi bi-input-cursor-text fs-1 text-primary mb-3"></i>
+                    <h3 class="h5">Données Simplifiées</h3>
+                    <p class="text-muted">Remplissez facilement vos informations clés grâce à notre formulaire guidé.</p>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-4">
+            <div class="card h-100 border-0">
+                <div class="card-body">
+                    <i class="bi bi-lightbulb fs-1 text-primary mb-3"></i>
+                    <h3 class="h5">Analyses IA</h3>
+                    <p class="text-muted">Bénéficiez d'analyses prospectives et de scénarios basés sur l'intelligence artificielle.</p>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-4">
+             <div class="card h-100 border-0">
+                <div class="card-body">
+                    <i class="bi bi-bar-chart-line fs-1 text-primary mb-3"></i>
+                    <h3 class="h5">Visualisations Claires</h3>
+                    <p class="text-muted">Consultez vos résultats via un tableau de bord interactif et des rapports téléchargeables.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endif %}
 
 {% endblock %}
