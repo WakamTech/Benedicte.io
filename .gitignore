@@ -1,0 +1,31 @@
+ # Environnement virtuel
+venv/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Fichiers IDE / OS spécifiques
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Fichiers de dépendances (si vous générez des roues, etc.)
+dist/
+build/
+*.egg-info/
+
+# Fichiers secrets / environnement
+.env
+*.env
+
+# Base de données locale SQLite (si vous l'utilisez)
+db.sqlite3
+*.sqlite3
+
+# Fichiers statiques collectés (pour le déploiement)
+staticfiles/
+
+# Fichiers média uploadés (si nécessaire)
+mediafiles/

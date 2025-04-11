@@ -1,0 +1,31 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mon SaaS{% endblock %}</title>
+    <!-- Link CSS files here -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> {# Exemple #}
+</head>
+<body>
+    <header>
+        <!-- Header content (nav bar, etc.) -->
+        <h1>Mon Application SaaS</h1>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Page specific content will go here -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <!-- Footer content -->
+        <p>© 2024 Mon Entreprise</p>
+    </footer>
+
+    <!-- Link JS files here -->
+    <script src="{% static 'js/main.js' %}"></script> {# Exemple #}
+</body>
+</html>
