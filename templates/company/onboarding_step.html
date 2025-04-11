@@ -1,0 +1,14 @@
+<!-- templates/company/onboarding_step.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+  <h2>{{ step_title }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Suivant</button>
+    {# Optionnel: Ajouter un bouton Précédent si nécessaire #}
+  </form>
+{% endblock %}

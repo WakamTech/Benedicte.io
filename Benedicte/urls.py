@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Inclut toutes les URLs définies dans users/urls.py
     path('', include('users.urls')),
+    path('', include('company.urls')), # Ou préfixez avec 'company/' si vous préférez: path('company/', include('company.urls')),
 ]

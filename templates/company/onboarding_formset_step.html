@@ -1,0 +1,48 @@
+<!-- templates/company/onboarding_formset_step.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+  <h2>{{ step_title }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }} {# Important for formset management #}
+
+    {% for form in formset %}
+      <div class="formset-row" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+          {{ form.id }} {# Hidden ID field for existing items #}
+          <h4>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %}</h4>
+          {{ form.as_p }}
+          {% if formset.can_delete %}
+            <label for="{{ form.DELETE.id_for_label }}">Supprimer:</label>
+            {{ form.DELETE }}
+          {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit">Suivant</button>
+    {# Optionnel: Ajouter bouton pour ajouter plus de formulaires via JS #}
+    {# Optionnel: Ajouter un bouton Précédent si nécessaire #}
+  </form>
+
+  {# Simple script to hide/show delete checkbox more nicely #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.formset-row').forEach(function(row) {
+            const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (deleteCheckbox) {
+                const deleteLabel = row.querySelector('label[for="' + deleteCheckbox.id + '"]');
+                if (deleteCheckbox.checked) {
+                    // Optionally style rows marked for deletion
+                    row.style.opacity = '0.5';
+                }
+                // Optional: Hide the checkbox itself and use a button or link
+                // deleteCheckbox.style.display = 'none';
+                // deleteLabel.style.display = 'none';
+                // Add a delete button here if you hide the checkbox
+            }
+        });
+    });
+  </script>
+{% endblock %}
