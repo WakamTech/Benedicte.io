@@ -10,7 +10,8 @@ from django.conf import settings # Importer settings
 from .services import perform_analysis, create_mock_analysis # Importer les deux fonctions
 from .services import perform_analysis  # Importez le service
 import logging  # Importer logging
-
+from .models import ScenarioRequest, ScenarioResult # Assurez-vous que ScenarioResult est importé
+import json
 logger = logging.getLogger(__name__)  # Initialiser logger pour les vues
 
 
@@ -92,3 +93,58 @@ def request_confirmation_view(request, request_id):
 #     # You might use AJAX here to check status or just show a waiting message
 #     context = {'request_id': scenario_request.id}
 #     return render(request, 'analysis/processing.html', context)
+
+
+
+@login_required
+def display_dashboard(request, request_id):
+    # Récupère la demande et vérifie que l'utilisateur est le propriétaire
+    scenario_request = get_object_or_404(ScenarioRequest, id=request_id, user=request.user)
+
+    # Essaye de récupérer le résultat associé
+    try:
+        scenario_result = scenario_request.result # Utilise le related_name 'result'
+        analysis_data = scenario_result.generated_data # Récupère le JSON
+    except ScenarioResult.DoesNotExist:
+        scenario_result = None
+        analysis_data = None # Pas encore de résultat
+
+    # Prépare les données pour les graphiques (si les données existent)
+    chart_data = None
+    if analysis_data and 'previsions_3_ans' in analysis_data:
+        labels = [item['annee'] for item in analysis_data['previsions_3_ans']]
+        ca_data = [item.get('ca_prev', 0) for item in analysis_data['previsions_3_ans']]
+        charges_data = [item.get('charges_prev', 0) for item in analysis_data['previsions_3_ans']]
+        marge_data = [item.get('marge_brute_prev', 0) for item in analysis_data['previsions_3_ans']]
+
+        chart_data = {
+            'labels': json.dumps(labels), # Convertir en string JSON pour JS
+            'ca_data': json.dumps(ca_data),
+            'charges_data': json.dumps(charges_data),
+            'marge_data': json.dumps(marge_data),
+        }
+
+    context = {
+        'scenario_request': scenario_request,
+        'scenario_result': scenario_result,
+        'analysis_data': analysis_data, # Le JSON complet pour le template
+        'chart_data': chart_data, # Données formatées pour Chart.js
+        'step_title': f"Tableau de Bord - Analyse #{scenario_request.id}"
+    }
+
+    # Gérer les différents statuts de la requête
+    if scenario_request.status == 'pending' or scenario_request.status == 'processing':
+        # Si en cours, on peut afficher une page d'attente ou le dashboard avec un message
+        # Pour l'instant, on affiche le dashboard mais on indique le statut
+        context['is_processing'] = True
+        # Option: Ajouter un header pour rafraîchir la page toutes les X secondes
+        # response = render(request, 'analysis/dashboard.html', context)
+        # response['Refresh'] = "15" # Rafraîchir toutes les 15 sec
+        # return response
+
+    elif scenario_request.status == 'failed':
+        # Si échec, afficher un message d'erreur
+        context['has_failed'] = True
+
+    # Si completed (ou autre), affiche le dashboard normalement
+    return render(request, 'analysis/dashboard.html', context)

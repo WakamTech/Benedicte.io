@@ -1,0 +1,199 @@
+<!-- templates/analysis/dashboard.html -->
+{% extends 'base.html' %}
+{% load static %} {# Charger static pour Chart.js #}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+  <h2>{{ step_title }}</h2>
+  <p><strong>Type d'analyse :</strong> {{ scenario_request.get_request_type_display }}</p>
+  <p><strong>Description :</strong> {{ scenario_request.user_description|default:"N/A" }}</p>
+  <p><strong>Statut :</strong> <strong style="color: {% if scenario_request.status == 'completed' %}green{% elif scenario_request.status == 'failed' %}red{% else %}orange{% endif %};">{{ scenario_request.get_status_display }}</strong></p>
+  <hr>
+
+  {# Afficher seulement si l'analyse est terminée et réussie #}
+  {% if scenario_request.status == 'completed' and analysis_data %}
+
+    {# 1. Synthèse #}
+    <section>
+      <h3>Synthèse</h3>
+      <p>{{ analysis_data.synthese|default:"Synthèse non disponible."|linebreaksbr }}</p>
+    </section>
+    <hr>
+
+    {# 2. Prévisions et Graphique #}
+    <section>
+      <h3>Analyse Prospective (3 ans)</h3>
+      {% if chart_data %}
+        {# Conteneur pour le graphique #}
+        <div style="width: 80%; max-width: 600px; margin: 20px auto;">
+            <canvas id="forecastChart"></canvas>
+        </div>
+        <p><strong>Hypothèses Clés :</strong> {{ analysis_data.hypotheses_previsions|default:"Non spécifiées." }}</p>
+      {% else %}
+        <p>Données de prévisions non disponibles pour le graphique.</p>
+      {% endif %}
+
+      {# Tableau des prévisions (optionnel, redondant avec graphique) #}
+      {% if analysis_data.previsions_3_ans %}
+      <h4>Tableau des prévisions :</h4>
+      <table border="1" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Année</th>
+            <th>CA Prévisionnel (€)</th>
+            <th>Charges Prévisionnelles (€)</th>
+            <th>Marge Brute Prévisionnelle (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for prev in analysis_data.previsions_3_ans %}
+          <tr>
+            <td>{{ prev.annee }}</td>
+            <td style="text-align: right;">{{ prev.ca_prev|floatformat:2 }}</td>
+            <td style="text-align: right;">{{ prev.charges_prev|floatformat:2 }}</td>
+            <td style="text-align: right;">{{ prev.marge_brute_prev|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </section>
+    <hr>
+
+    {# 3. Risques Clés #}
+    <section>
+      <h3>Risques Clés Identifiés</h3>
+      {% if analysis_data.risques_cles %}
+        <ul>
+          {% for risque in analysis_data.risques_cles %}
+            <li>{{ risque }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Aucun risque clé identifié.</p>
+      {% endif %}
+    </section>
+    <hr>
+
+    {# 4. Recommandations #}
+    <section>
+      <h3>Recommandations</h3>
+      {% if analysis_data.recommandations %}
+        <ul>
+          {% for reco in analysis_data.recommandations %}
+            <li>
+              <span style="font-weight: bold; color: {% if '[VERT]' in reco.niveau %}green{% elif '[ORANGE]' in reco.niveau %}orange{% elif '[ROUGE]' in reco.niveau %}red{% else %}black{% endif %};">
+                {{ reco.niveau|default:"[INFO]" }}
+              </span>
+              {{ reco.recommendation }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Aucune recommandation spécifique fournie.</p>
+      {% endif %}
+    </section>
+    <hr>
+
+    {# Boutons Téléchargement (Seront activés en Phase 6) #}
+    <section>
+        <h3>Télécharger le Rapport</h3>
+        <a href="#" class="button disabled">Télécharger PDF (Bientôt)</a>
+        <a href="#" class="button disabled">Télécharger Excel (Bientôt)</a>
+    </section>
+
+  {# Gérer les autres statuts #}
+  {% elif is_processing %}
+    <p style="color: orange;">Votre analyse est en cours de traitement. Cette page peut se rafraîchir ou vous pouvez revenir plus tard.</p>
+  {% elif has_failed %}
+    <p style="color: red;">L'analyse a échoué. Veuillez vérifier les détails ou contacter le support si le problème persiste.</p>
+  {% else %}
+    <p>Les résultats de l'analyse ne sont pas encore disponibles ou la demande n'a pas été trouvée.</p>
+  {% endif %}
+
+  <p><a href="{% url 'home' %}">Retour à l'accueil</a></p>
+
+{% endblock %}
+
+{% block scripts %} {# Ajouter un bloc pour les scripts JS spécifiques à la page #}
+  {# Inclure Chart.js (depuis un CDN ou localement) #}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  {# Script pour initialiser le graphique si les données sont là #}
+  {% if chart_data %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const ctx = document.getElementById('forecastChart').getContext('2d');
+
+      // Parser les données JSON passées depuis la vue Django
+      const labels = JSON.parse('{{ chart_data.labels|escapejs }}');
+      const caData = JSON.parse('{{ chart_data.ca_data|escapejs }}');
+      const chargesData = JSON.parse('{{ chart_data.charges_data|escapejs }}');
+      const margeData = JSON.parse('{{ chart_data.marge_data|escapejs }}');
+
+      const forecastChart = new Chart(ctx, {
+        type: 'line', // Type de graphique (line, bar, etc.)
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Chiffre d\'Affaires (€)',
+              data: caData,
+              borderColor: 'rgb(75, 192, 192)',
+              tension: 0.1,
+              fill: false,
+            },
+            {
+              label: 'Charges Totales (€)',
+              data: chargesData,
+              borderColor: 'rgb(255, 99, 132)',
+              tension: 0.1,
+              fill: false,
+            },
+            {
+              label: 'Marge Brute (€)',
+              data: margeData,
+              borderColor: 'rgb(54, 162, 235)',
+              backgroundColor: 'rgba(54, 162, 235, 0.1)', // Remplissage léger pour la marge
+              type: 'bar', // Afficher la marge en barres ? Ou line
+              order: 3 // Assurer que les barres sont derrière les lignes si superposées
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true, // Conserve le ratio L/H
+          scales: {
+            y: {
+              beginAtZero: true, // Commencer l'axe Y à 0
+              ticks: {
+                   // Formatage en euros
+                   callback: function(value, index, values) {
+                       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+                   }
+               }
+            }
+          },
+          plugins: {
+             tooltip: {
+                 callbacks: {
+                     label: function(context) {
+                         let label = context.dataset.label || '';
+                         if (label) {
+                             label += ': ';
+                         }
+                         if (context.parsed.y !== null) {
+                             label += new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
+                         }
+                         return label;
+                     }
+                 }
+             }
+         }
+        }
+      });
+    });
+  </script>
+  {% endif %}
+{% endblock %}

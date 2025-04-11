@@ -4,16 +4,52 @@
 {% block title %}Accueil{% endblock %}
 
 {% block content %}
-  <h2>Bienvenue !</h2>
-  {% if user.is_authenticated %}
-    <p>Bonjour, {{ user.username }} !</p>
-    <p>Vous êtes connecté.</p>
-    <form method="post" action="{% url 'logout' %}">
-      {% csrf_token %}
-      <button type="submit">Se déconnecter</button>
-    </form>
-  {% else %}
-    <p>Vous n'êtes pas connecté.</p>
-    <p><a href="{% url 'login' %}">Se connecter</a> ou <a href="{% url 'register' %}">S'inscrire</a></p>
-  {% endif %}
+<h2>Bienvenue !</h2>
+{% if user.is_authenticated %}
+<p>Bonjour, {{ user.username }} !</p>
+<p>Vous êtes connecté.</p>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Se déconnecter</button>
+</form>
+<h3>Vos Dernières Analyses :</h3>
+{% with user.scenario_requests.all|slice:":5" as recent_requests %} {# Limite aux 5 dernières #}
+    {% if recent_requests %}
+<ul>
+    {% for req in recent_requests %}
+    <li>
+        Analyse #{{ req.id }} ({{ req.get_request_type_display }}) - Statut: {{ req.get_status_display }}
+            {% if req.status == 'completed' %}
+              -
+        <a href="{% url 'dashboard' req.id %}">Voir Dashboard</a>
+        {% elif req.status == 'pending' or req.status == 'processing' %}
+              -
+        <a href="{% url 'dashboard' req.id %}">Voir Statut</a>
+        {# Lien vers dashboard qui affichera le statut #}
+            {% elif req.status == 'failed' %}
+              -
+        <span style="color:red;">Échec</span>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Vous n'avez pas encore demandé d'analyse.</p>
+{% endif %}
+  {% endwith %}
+   {# Lien pour démarrer l'onboarding si pas de profil ? Ou lien vers demande d'analyse ? #}
+<p>
+    <a href="{% url 'company_profile_step' %}" class="button">Commencer/Modifier les infos entreprise</a>
+</p>
+<p>
+    <a href="{% url 'request_scenario' %}" class="button">Demander une nouvelle analyse</a>
+</p>
+{% else %}
+<p>Vous n'êtes pas connecté.</p>
+<p>
+    <a href="{% url 'login' %}">Se connecter</a> ou
+    <a href="{% url 'register' %}">S'inscrire</a>
+</p>
+{% endif %}
+
 {% endblock %}
