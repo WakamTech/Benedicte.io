@@ -1,0 +1,16 @@
+<!-- templates/analysis/request_scenario.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+  <h2>{{ step_title }}</h2>
+  <p>Veuillez sélectionner le type d'analyse ou décrire votre projet spécifique.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Lancer l'analyse</button>
+     {# Optionnel: Bouton Précédent pour revenir à l'étape des produits #}
+     <a href="{% url 'company_products_step' %}" class="button-secondary">Précédent</a>
+  </form>
+{% endblock %}

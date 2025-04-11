@@ -1,0 +1,9 @@
+<!-- templates/analysis/processing.html -->
+{% extends 'base.html' %}
+{% block title %}Analyse en cours{% endblock %}
+{% block content %}
+  <h2>Analyse en cours...</h2>
+  <p>Votre demande (ID: {{ request_id }}) est en cours de traitement.</p>
+  <p>Veuillez patienter. Cette page pourrait se rafraîchir automatiquement ou vous pouvez revenir plus tard.</p>
+  {# Add a spinner or progress bar later #}
+{% endblock %}

@@ -1,0 +1,16 @@
+<!-- templates/analysis/request_confirmation.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+  <h2>{{ step_title }}</h2>
+  <p>Votre demande d'analyse (ID: {{ request_id }}) a été soumise avec succès.</p>
+  <p>Statut actuel : <strong>{{ request_status }}</strong>.</p>
+  <p>Le traitement peut prendre quelques instants (dans la version finale).</p>
+
+  {# Lien vers le futur dashboard - à décommenter en phase 5 #}
+  {# <p><a href="{% url 'dashboard' request_id %}">Voir le tableau de bord</a></p> #}
+
+  <p><a href="{% url 'home' %}">Retour à l'accueil</a></p>
+{% endblock %}
