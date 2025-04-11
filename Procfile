@@ -1,0 +1,1 @@
+web: gunicorn Benedicte.wsgi:application

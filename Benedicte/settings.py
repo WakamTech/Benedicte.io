@@ -33,10 +33,10 @@ USE_MOCK_ANALYSIS = env.bool('USE_MOCK_ANALYSIS', default=True) # True par défa
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-q%h2quy_f^ford#18b24z-z%k^1fxyb@i-w&oz-a@3%sbngjej"
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env.bool('DEBUG', default=False)
 
 INSEE_CONSUMER_KEY = env('INSEE_CONSUMER_KEY', default=None) # Ajout de default=None
 INSEE_CONSUMER_SECRET = env('INSEE_CONSUMER_SECRET', default=None) # Ajout de default=None
@@ -44,7 +44,20 @@ OPENAI_API_KEY = env('OPENAI_API_KEY', default=None) # Ajout de default=None
 
 ALLOWED_HOSTS = []
 
+# Gestion pour Render
+RENDER_EXTERNAL_HOSTNAME = env('RENDER_EXTERNAL_HOSTNAME', default=None)
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# Ajoutez aussi votre domaine personnalisé si vous en avez un plus tard
+# ALLOWED_HOSTS.append('votre_domaine.com')
+
+# Ajoutez 'localhost' et '127.0.0.1' si vous voulez tester en mode prod localement (avec DEBUG=False)
+if DEBUG:
+     ALLOWED_HOSTS.extend(['localhost', '127.0.0.1']) # Garder pour dev local
+elif not RENDER_EXTERNAL_HOSTNAME: # Fallback si non sur Render et DEBUG=False
+     ALLOWED_HOSTS.append('127.0.0.1') # Autoriser au moins localhost en prod locale
+     
 # Application definition
 
 INSTALLED_APPS = [
@@ -62,6 +75,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -135,6 +149,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+# Configuration Static Files pour la production avec WhiteNoise
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Dossier où collectstatic mettra les fichiers
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' # Recommandé pour l'efficacité
+
 STATIC_URL = "static/"
 
 
@@ -151,3 +169,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = 'home' # Nom de l'URL où rediriger après connexion
 LOGOUT_REDIRECT_URL = 'home' # Nom de l'URL où rediriger après déconnexion
+
+# settings.py
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_EXTERNAL_HOSTNAME:
+     # Render utilise HTTPS
+     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+# Ajoutez https://votre_domaine.com si besoin
