@@ -7,40 +7,36 @@ from .models import ScenarioRequest
 from .forms import ScenarioRequestForm
 from company.models import CompanyProfile # Need to link the profile
 
+from .services import perform_analysis # Importez le service
+import logging # Importer logging
+
+logger = logging.getLogger(__name__) # Initialiser logger pour les vues
+
 @login_required
 def request_scenario_view(request):
     try:
-        # Get the company profile associated with the logged-in user
         company_profile = request.user.company_profile
     except CompanyProfile.DoesNotExist:
-        # Handle case where profile doesn't exist (shouldn't happen if onboarding is mandatory)
-        # Maybe redirect back to the first step of onboarding?
-        return redirect('company_profile_step') # Redirect to company profile creation
+        logger.warning(f"Utilisateur {request.user.id} a tenté d'accéder à la demande de scénario sans profil.")
+        return redirect('company_profile_step')
 
     if request.method == 'POST':
         form = ScenarioRequestForm(request.POST)
         if form.is_valid():
-            # Create the request object but don't save to DB yet
             scenario_request = form.save(commit=False)
-            # Assign the user and the company profile
             scenario_request.user = request.user
             scenario_request.company_profile = company_profile
-            # Set initial status
-            scenario_request.status = 'pending' # Or 'processing' if we simulate immediate start
+            scenario_request.status = 'pending' # Commence en attente
             scenario_request.save()
+            logger.info(f"Demande de scénario {scenario_request.id} créée pour l'utilisateur {request.user.id}")
 
-            # --- Placeholder for Triggering Analysis ---
-            # In Phase 4, we will call backend services here.
-            # For now, let's just simulate completion immediately
-            # and redirect to a future dashboard URL (or home for now).
+            # --- Déclenchement de l'analyse via le service ---
+            # Exécution SYNCHRONE (l'utilisateur attend)
+            logger.info(f"Déclenchement de l'analyse synchrone pour la demande {scenario_request.id}")
+            analysis_successful = perform_analysis(scenario_request.id)
+            logger.info(f"Fin de l'analyse synchrone pour la demande {scenario_request.id}. Succès: {analysis_successful}")
 
-            # Simulate processing and completion for testing purposes:
-            scenario_request.status = 'completed' # Simulate it finished quickly
-            scenario_request.save()
-
-            # Redirect to the dashboard (when it exists)
-            # return redirect(reverse('dashboard', args=[scenario_request.id]))
-            # For now, redirect to a simple confirmation or home
+            # Rediriger vers la confirmation (qui montrera le statut final)
             return redirect(reverse('request_confirmation', args=[scenario_request.id]))
 
     else:

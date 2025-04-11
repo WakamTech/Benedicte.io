@@ -1,6 +1,6 @@
  # Environnement virtuel
 venv/
-
+.env/
 # Fichiers Python compilés
 __pycache__/
 *.pyc

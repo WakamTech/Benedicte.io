@@ -9,13 +9,22 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import os
+import environ 
 
 from pathlib import Path
-import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Initialise django-environ
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+# Lecture du fichier .env
+environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -24,7 +33,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-q%h2quy_f^ford#18b24z-z%k^1fxyb@i-w&oz-a@3%sbngjej"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
+
+INSEE_CONSUMER_KEY = env('INSEE_CONSUMER_KEY')
+INSEE_CONSUMER_SECRET = env('INSEE_CONSUMER_SECRET')
+OPENAI_API_KEY = env('OPENAI_API_KEY')
 
 ALLOWED_HOSTS = []
 
