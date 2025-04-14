@@ -34,7 +34,11 @@ ChargeFormSet = inlineformset_factory(
 ProductServiceFormSet = inlineformset_factory(
     CompanyProfile,
     ProductService,
-    fields=('name', 'revenue_contribution'),
+    # AJOUTER 'description' ICI:
+    fields=('name', 'revenue_contribution', 'description'),
     extra=1,
-    can_delete=True
+    can_delete=True,
+    widgets={ # Optionnel: Utiliser un widget Textarea pour la description
+        'description': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Décrivez brièvement...'}),
+    }
 )

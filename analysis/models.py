@@ -10,12 +10,20 @@ class ScenarioRequest(models.Model):
         ('completed', 'Terminé'),
         ('failed', 'Échec'),
     ]
+    # MISE À JOUR DES CHOIX (I.1)
     SCENARIO_TYPE_CHOICES = [
-        ('global', 'Conseil Global'),
-        ('product_launch', 'Lancement Produit'),
-        ('cost_optimization', 'Optimisation Coûts'),
-        # Add other predefined types if needed, or rely solely on description
-        ('other', 'Autre (décrire)')
+        ('new_product', 'Lancer un nouveau produit ou service'),
+        ('new_market', 'Explorer un nouveau marché ou pays'),
+        ('optimize_model', 'Optimiser un modèle économique existant'),
+        ('funding', 'Simuler une levée de fonds ou un financement'),
+        ('team', 'Recruter ou renforcer une équipe'),
+        ('automation', 'Automatiser ou digitaliser un processus'),
+        ('diversify', 'Diversifier l\'activité ou pivoter le business model'),
+        ('external_change', 'Anticiper un changement externe (inflation, réglementation, concurrence)'),
+        ('m_and_a', 'Préparer une fusion, acquisition ou partenariat stratégique'),
+        ('other', 'Autre (champ libre)'),
+        # On peut garder 'global' ou le supprimer si 'Autre' suffit
+        # ('global', 'Conseil Global'), # A voir si on le garde
     ]
 
     user = models.ForeignKey(
@@ -29,12 +37,13 @@ class ScenarioRequest(models.Model):
         on_delete=models.PROTECT, # Prevent deleting company data if analysis exists
         related_name='scenario_requests'
     )
-    # Option 1: Predefined type
+    # Champ request_type utilisant les nouveaux choix
     request_type = models.CharField(
-        max_length=50,
+        max_length=50, # Laisser assez de marge pour les clés
         choices=SCENARIO_TYPE_CHOICES,
-        default='global',
-        verbose_name="Type de scénario"
+        # default='global', # Changer le défaut si 'global' est supprimé, ex: 'other' ?
+        default='new_product', # Mettre un défaut pertinent
+        verbose_name="Axe d'analyse principal" # Nouveau label plus précis ?
     )
     # Option 2: Free text description (as per "Quel est votre projet ?")
     user_description = models.TextField(

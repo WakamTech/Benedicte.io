@@ -73,21 +73,28 @@ class Charge(models.Model):
     def __str__(self):
         return f"{self.company.name} - Charge {self.type}: {self.description} ({self.amount}€)"
 
+
 class ProductService(models.Model):
-    # Link to the company profile
     company = models.ForeignKey(
         CompanyProfile,
         on_delete=models.CASCADE,
         related_name='products_services'
     )
     name = models.CharField(max_length=255, verbose_name="Nom du Produit / Service")
-    # Represent contribution as a percentage or absolute value? Let's use absolute value for now.
     revenue_contribution = models.DecimalField(
         max_digits=15,
         decimal_places=2,
         verbose_name="Contribution au CA Annuel (€)",
         help_text="Montant du CA généré par ce produit/service sur la dernière année complète."
     )
+    # NOUVEAU CHAMP (H implicite)
+    description = models.TextField(
+        blank=True, # Permet de laisser vide
+        null=True,
+        verbose_name="Description (quelques mots)",
+        help_text="Décrivez brièvement ce produit ou service."
+    )
 
     def __str__(self):
-        return f"{self.company.name} - Produit/Service: {self.name} ({self.revenue_contribution}€)"
+        # Mise à jour du __str__ pour inclure potentiellement la description
+        return f"{self.company.name} - {self.name} ({self.revenue_contribution}€)"
