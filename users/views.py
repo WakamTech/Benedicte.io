@@ -9,9 +9,11 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger # Import Paginator classes
 from analysis.models import ScenarioRequest # Importer le modèle d'analyse
 
+from .forms import CustomUserCreationForm, CustomAuthenticationForm
+
 # Vue pour l'inscription (utilise une vue basée sur classe générique)
 class RegisterView(CreateView):
-    form_class = UserCreationForm
+    form_class = CustomUserCreationForm
     template_name = 'registration/register.html'
     success_url = reverse_lazy('login') # Redirige vers la page de connexion après succès
 
@@ -24,7 +26,7 @@ class RegisterView(CreateView):
 
 # Vue pour la connexion (utilise une vue basée sur classe intégrée)
 class CustomLoginView(LoginView):
-    form_class = AuthenticationForm
+    form_class = CustomAuthenticationForm
     template_name = 'registration/login.html'
     # L'URL de redirection après succès est définie dans settings.py (LOGIN_REDIRECT_URL)
     # ou peut être spécifiée ici avec success_url = reverse_lazy('ma_page_apres_login')

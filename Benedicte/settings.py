@@ -58,6 +58,14 @@ if DEBUG:
 elif not RENDER_EXTERNAL_HOSTNAME: # Fallback si non sur Render et DEBUG=False
      ALLOWED_HOSTS.append('127.0.0.1') # Autoriser au moins localhost en prod locale
      
+
+# Configuration pour utiliser l'email comme identifiant principal
+AUTH_USER_MODEL = 'users.CustomUser' # <<< IMPORTANT: Nous allons créer un modèle utilisateur personnalisé
+USERNAME_FIELD = 'email'            # <<< Utiliser l'email pour se connecter
+EMAIL_FIELD = 'email'               # <<< Champ utilisé pour les fonctions email
+EMAIL_REQUIRED = True              # <<< L'email est obligatoire
+USERNAME_REQUIRED = False           # <<< Le champ 'username' n'est plus requis par Django
+     
 # Application definition
 
 INSTALLED_APPS = [
@@ -135,12 +143,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
+# settings.py
+LANGUAGE_CODE = 'fr-fr' # Ou juste 'fr'
+TIME_ZONE = 'Europe/Paris' # Mettre le bon fuseau horaire
 USE_I18N = True
-
+USE_L10N = True # Déprécié mais parfois utile pour formats
 USE_TZ = True
 
 
