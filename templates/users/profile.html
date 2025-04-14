@@ -7,88 +7,172 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">{{ step_title }}</h1>
-
     <div class="row g-4">
-        {# Colonne Infos Personnelles #}
+        {# Colonne Infos Personnelles - MODIFIÉE #}
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h2 class="h5 mb-0"><i class="bi bi-person-vcard me-2"></i>Informations Personnelles</h2>
+                    <h2 class="h5 mb-0">
+                        <i class="bi bi-person-vcard me-2"></i>Informations Personnelles
+                    </h2>
                 </div>
                 <div class="card-body">
-                    <p><strong>Email (Identifiant) :</strong> {{ user.email }}</p>
-                    <p><strong>Prénom :</strong> {{ user.first_name|default:"Non renseigné" }}</p>
-                    <p><strong>Nom :</strong> {{ user.last_name|default:"Non renseigné" }}</p>
-                    {# TODO: Ajouter un formulaire pour modifier Prénom/Nom #}
-                    <a href="#" class="btn btn-sm btn-outline-secondary disabled">Modifier Prénom/Nom (Bientôt)</a>
-
-                    <hr class="my-3">
-                    <h3 class="h6">Changer le mot de passe</h3>
-                    {# Lien vers la vue de changement de mot de passe de Django #}
+                    {# Formulaire de mise à jour Prénom/Nom #}
+                    <form method="post" action="{% url 'user_profile' %}" novalidate>
+                        {% csrf_token %}
+                        {# Champ Email (non modifiable ici) #}
+                        <div class="mb-3">
+                            <label class="form-label">Email (Identifiant)</label>
+                            <input
+                                type="email"
+                                class="form-control"
+                                value="{{ user.email }}"
+                                disabled
+                                readonly
+                            >
+                            <div class="form-text">L'adresse email ne peut pas être modifiée ici.</div>
+                        </div>
+                        {# Champs Prénom/Nom du formulaire #}
+                        {% for field in update_form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            <input
+                                type="{{ field.field.widget.input_type }}"
+                                name="{{ field.html_name }}"
+                                id="{{ field.id_for_label }}"
+                                class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                placeholder="{{ field.label }}"
+                                value="{{ field.value|default:'' }}"
+                            >
+                            {% if field.errors %}
+                            <div class="invalid-feedback">{% for error in field.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {# Bouton submit spécifique pour ce formulaire #}
+                        <button type="submit" name="update_profile_submit" class="btn btn-sm btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            Enregistrer les modifications
+                        </button>
+                    </form>
+                    <hr class="my-4">
+                    <h3 class="h6">Sécurité</h3>
                     <a href="{% url 'password_change' %}" class="btn btn-sm btn-outline-secondary">Modifier mon mot de passe</a>
                 </div>
             </div>
         </div>
-
         {# Colonne Abonnement & Suppression #}
         <div class="col-md-6">
             <div class="card shadow-sm mb-4">
-                 <div class="card-header">
-                    <h2 class="h5 mb-0"><i class="bi bi-credit-card-2-front me-2"></i>Abonnement Stripe</h2>
+                <div class="card-header">
+                    <h2 class="h5 mb-0">
+                        <i class="bi bi-credit-card-2-front me-2"></i>Abonnement
+                    </h2>
+                    {# Titre simplifié #}
                 </div>
-                 <div class="card-body">
-                    <p><strong>Statut :</strong>
-                       {% if user.is_subscribed_active %}
-                         <span class="badge bg-success">Actif</span>
-                       {% else %}
-                         <span class="badge bg-secondary">{{ user.get_subscription_status_display|default:"Inactif" }}</span>
-                       {% endif %}
+                <div class="card-body">
+                    <p>
+                        <strong>Statut :</strong>
+                        {% if user.is_subscribed_active %}
+                        <span class="badge bg-success">Actif</span>
+                        {% elif user.subscription_status %}
+                        <span class="badge bg-secondary">{{ user.get_subscription_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark">Inconnu</span>
+                        {% endif %}
                     </p>
-                     <p><small class="text-muted">ID Client: {{ user.stripe_customer_id|default:"N/A" }}</small></p>
-                     <p><small class="text-muted">ID Abonnement: {{ user.stripe_subscription_id|default:"N/A" }}</small></p>
-                    {# TODO: Ajouter lien vers portail client Stripe pour gérer l'abonnement #}
-                    <a href="#" class="btn btn-sm btn-outline-secondary disabled">Gérer mon abonnement (Bientôt)</a>
+                    <!-- {# Optionnel: Cacher les ID techniques si pas utile pour l'utilisateur #}
+                    {#
+                    <p>
+                        <small class="text-muted">ID Client: {{ user.stripe_customer_id|default:"N/A" }}</small>
+                    </p>
+                    #}
+                    {#
+                    <p>
+                        <small class="text-muted">ID Abonnement: {{ user.stripe_subscription_id|default:"N/A" }}</small>
+                    </p>
+                    #} -->
+
+                   {# LIEN ACTIVÉ - seulement si ID client existe #}
+                   {% if user.stripe_customer_id %}
+                    <a href="{% url 'stripe_billing_portal' %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-gear me-1"></i>
+                        Gérer mon abonnement et facturation
+                    </a>
+                    <div class="form-text mt-1">
+                        <small>Vous serez redirigé vers notre partenaire de paiement Stripe.</small>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">
+                        <small>Informations d'abonnement non disponibles.</small>
+                    </p>
+                    {% endif %}
                 </div>
             </div>
-
             <div class="card shadow-sm border-danger">
-                 <div class="card-header bg-danger-subtle text-danger-emphasis">
-                    <h2 class="h5 mb-0"><i class="bi bi-exclamation-octagon me-2"></i>Zone Dangereuse</h2>
+                <div class="card-header bg-danger-subtle text-danger-emphasis">
+                    <h2 class="h5 mb-0">
+                        <i class="bi bi-exclamation-octagon me-2"></i>Zone Dangereuse
+                    </h2>
                 </div>
-                 <div class="card-body">
-                    <p class="text-danger"><small>La suppression de votre compte est définitive et entraînera la perte de toutes vos données et analyses.</small></p>
+                <div class="card-body">
+                    <p class="text-danger">
+                        <small>La suppression de votre compte est définitive et entraînera la perte de toutes vos données et analyses.</small>
+                    </p>
                     {# Bouton pour ouvrir une modale de confirmation #}
-                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                       <i class="bi bi-trash3 me-1"></i> Supprimer mon compte
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteAccountModal"
+                    >
+                        <i class="bi bi-trash3 me-1"></i>
+                        Supprimer mon compte
                     </button>
                 </div>
             </div>
         </div>
-    </div> {# Fin row #}
-</div>
-
-<!-- Modale de Confirmation Suppression Compte -->
-<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5 text-danger" id="deleteAccountModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmation de Suppression</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Êtes-vous absolument sûr de vouloir supprimer votre compte ?</p>
-        <p><strong>Toutes vos données, y compris vos analyses et informations d'entreprise, seront définitivement effacées. Cette action est irréversible.</strong></p>
-        <p>Votre abonnement Stripe sera également annulé (si possible via API, sinon à faire manuellement).</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        {# Formulaire pointant vers la vue de suppression #}
-        <form action="{% url 'delete_account' %}" method="post" style="display: inline;"> {# URL à créer #}
-             {% csrf_token %}
-             <button type="submit" class="btn btn-danger">Oui, supprimer mon compte</button>
-        </form>
-      </div>
     </div>
-  </div>
+    {# Fin row #}
+</div>
+<!-- Modale de Confirmation Suppression Compte -->
+<div
+    class="modal fade"
+    id="deleteAccountModal"
+    tabindex="-1"
+    aria-labelledby="deleteAccountModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-danger" id="deleteAccountModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmation de Suppression
+                </h1>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous absolument sûr de vouloir supprimer votre compte ?</p>
+                <p>
+                    <strong>Toutes vos données, y compris vos analyses et informations d'entreprise, seront définitivement effacées. Cette action est irréversible.</strong>
+                </p>
+                <p>Votre abonnement Stripe sera également annulé (si possible via API, sinon à faire manuellement).</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                {# Formulaire pointant vers la vue de suppression #}
+                <form action="{% url 'delete_account' %}" method="post" style="display: inline;">
+                    {# URL à créer #}
+             {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Oui, supprimer mon compte</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

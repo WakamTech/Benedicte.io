@@ -51,3 +51,17 @@ class CustomAuthenticationForm(AuthenticationForm):
         ),
         'inactive': _("Ce compte est inactif."),
     }
+
+class UserProfileUpdateForm(forms.ModelForm):
+    """Formulaire pour mettre à jour le prénom et le nom de l'utilisateur."""
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name')
+        labels = {
+            'first_name': _('Prénom'),
+            'last_name': _('Nom'),
+        }
+        widgets = {
+            'first_name': forms.TextInput(attrs={'placeholder': _('Votre prénom')}),
+            'last_name': forms.TextInput(attrs={'placeholder': _('Votre nom')}),
+        }

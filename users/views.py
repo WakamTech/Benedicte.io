@@ -26,6 +26,7 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib import messages # Pour messages succès/erreur
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from .forms import UserProfileUpdateForm # Importer le nouveau formulaire
 account_activation_token_generator = PasswordResetTokenGenerator() # Réutiliser le générateur
 
 logger = logging.getLogger(__name__)
@@ -323,10 +324,24 @@ def create_password_confirm(request, uidb64=None, token=None):
 @login_required
 def user_profile_view(request):
     user = request.user
+    update_form = UserProfileUpdateForm(instance=user) # Initialiser avec données user
+
+    if request.method == 'POST':
+        # Vérifier si le POST vient du formulaire de mise à jour de profil
+        # (on pourrait ajouter un name="submit_profile" au bouton pour être plus sûr)
+        if 'update_profile_submit' in request.POST: # Nom du bouton submit (à ajouter au template)
+            update_form = UserProfileUpdateForm(request.POST, instance=user)
+            if update_form.is_valid():
+                update_form.save()
+                messages.success(request, "Vos informations personnelles ont été mises à jour.")
+                return redirect('user_profile') # Recharger la page profil
+            else:
+                messages.error(request, "Veuillez corriger les erreurs dans le formulaire.")
+
     context = {
         'step_title': "Mon Profil",
         'user': user,
-        # Ajouter les formulaires de modification ici plus tard
+        'update_form': update_form, # Passer le formulaire au contexte
     }
     return render(request, 'users/profile.html', context)
 
@@ -364,4 +379,34 @@ def delete_account_view(request):
 
     else:
         # Rediriger si la méthode n'est pas POST
+        return redirect('user_profile')
+    
+@login_required
+def redirect_to_stripe_billing_portal(request):
+    """Redirige l'utilisateur vers son portail client Stripe."""
+    user = request.user
+
+    # Vérifier si l'utilisateur a un ID client Stripe
+    if not user.stripe_customer_id:
+        messages.error(request, "Impossible d'accéder à la gestion de l'abonnement (ID Client Stripe manquant).")
+        logger.error(f"Tentative d'accès portail Stripe sans stripe_customer_id pour user {user.id}")
+        return redirect('user_profile')
+
+    # Définir l'URL de retour vers la page de profil après la session sur le portail
+    # Utiliser build_absolute_uri pour être sûr
+    return_url = request.build_absolute_uri(reverse('user_profile'))
+
+    try:
+        # Créer une session de portail client Stripe
+        # Documentation: https://stripe.com/docs/api/customer_portal/sessions/create
+        session = stripe.billing_portal.Session.create(
+          customer=user.stripe_customer_id,
+          return_url=return_url,
+        )
+        # Rediriger vers l'URL du portail
+        return redirect(session.url, code=303)
+
+    except Exception as e:
+        logger.error(f"Erreur lors de la création de la session Portail Client Stripe pour user {user.id} (customer: {user.stripe_customer_id}): {e}")
+        messages.error(request, "Une erreur s'est produite lors de l'accès à la gestion de votre abonnement. Veuillez réessayer plus tard.")
         return redirect('user_profile')
