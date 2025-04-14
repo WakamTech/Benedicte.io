@@ -34,34 +34,58 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('Le superutilisateur doit avoir is_superuser=True.'))
         return self.create_user(email, password, **extra_fields)
 
-class CustomUser(AbstractUser):
-    """Modèle Utilisateur personnalisé utilisant l'email comme identifiant."""
 
-    # Rendre le username non unique et optionnel (car on utilise l'email)
-    username = models.CharField(
-        _('username'),
-        max_length=150,
-        unique=False, # <<< Non unique
-        blank=True,   # <<< Peut être vide
-        null=True,    # <<< Peut être null dans la DB
+
+class CustomUserManager(BaseUserManager):
+    # ... (Manager reste inchangé) ...
+    pass # Mettez le code du manager ici s'il n'y est pas déjà
+
+class CustomUser(AbstractUser):
+    username = models.CharField( # Inchangé
+        _('username'), max_length=150, unique=False, blank=True, null=True,
         help_text=_('Optionnel. 150 caractères ou moins.'),
-        # validators=[username_validator], # Enlever validateurs si besoin
-        error_messages={
-            # 'unique': _("A user with that username already exists."), # Message plus nécessaire
-        },
+        error_messages={},
     )
-    email = models.EmailField(
-        _('adresse email'),
-        unique=True, # <<< L'email DOIT être unique
+    email = models.EmailField( # Inchangé
+        _('adresse email'), unique=True,
         error_messages={
             'unique': _("Un utilisateur avec cette adresse email existe déjà."),
         },
     )
 
-    USERNAME_FIELD = 'email' # Champ utilisé pour l'identification
-    REQUIRED_FIELDS = [] # Champs requis lors de la création via createsuperuser (aucun autre que email/password)
+    # --- NOUVEAUX CHAMPS STRIPE ---
+    stripe_customer_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        verbose_name="ID Client Stripe",
+        help_text="ID unique du client sur Stripe."
+    )
+    stripe_subscription_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        verbose_name="ID Abonnement Stripe",
+        help_text="ID unique de l'abonnement actif sur Stripe."
+    )
+    # Statut simplifié pour commencer
+    subscription_status = models.CharField(
+        max_length=20, blank=True, null=True, default="inactive", # Défaut à inactif
+        choices=[('active', 'Actif'), ('canceled', 'Annulé'), ('incomplete', 'Incomplet'), ('inactive', 'Inactif')],
+        verbose_name="Statut Abonnement Stripe"
+    )
+    # --- FIN NOUVEAUX CHAMPS STRIPE ---
 
-    objects = CustomUserManager() # Utiliser notre manager personnalisé
+    # Rendre first_name et last_name optionnels si désiré (pour inscription rapide)
+    first_name = models.CharField(_("prénom"), max_length=150, blank=True)
+    last_name = models.CharField(_("nom"), max_length=150, blank=True)
 
-    def __str__(self):
+
+    USERNAME_FIELD = 'email' # Inchangé
+    REQUIRED_FIELDS = [] # Inchangé
+
+    objects = CustomUserManager() # Inchangé
+
+    def __str__(self): # Inchangé
         return self.email
+
+    # Optionnel: Ajouter une propriété pour vérifier facilement si l'utilisateur est abonné actif
+    @property
+    def is_subscribed_active(self):
+        return self.subscription_status == 'active'

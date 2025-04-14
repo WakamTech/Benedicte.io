@@ -13,9 +13,16 @@ from .forms import CustomUserCreationForm, CustomAuthenticationForm
 import logging
 from django.urls import reverse
 from django.contrib import messages
+
+from django.views.decorators.csrf import csrf_exempt # Important pour webhook
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth import get_user_model # Pour récupérer CustomUser
+
 logger = logging.getLogger(__name__)
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+CustomUser = get_user_model()
 
 # Vue pour l'inscription (utilise une vue basée sur classe générique)
 class RegisterView(CreateView):
@@ -153,3 +160,97 @@ def payment_cancelled(request):
         'is_cancelled': True
     }
     return render(request, 'registration/payment_status.html', context)
+
+@csrf_exempt # Désactiver la vérification CSRF pour cette vue qui reçoit une requête externe
+def stripe_webhook(request):
+    """Ecoute les événements envoyés par Stripe."""
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    event = None
+
+    # Vérifier si le secret est configuré
+    if not endpoint_secret:
+        logger.error("STRIPE_WEBHOOK_SECRET n'est pas configuré.")
+        return HttpResponse(status=400)
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+        logger.info(f"Webhook Stripe reçu: Type={event['type']} ID={event['id']}")
+    except ValueError as e:
+        # Payload invalide
+        logger.error(f"Webhook Stripe - Payload invalide: {e}")
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Signature invalide
+        logger.error(f"Webhook Stripe - Erreur de signature: {e}")
+        return HttpResponse(status=400)
+    except Exception as e:
+        logger.error(f"Webhook Stripe - Erreur inconnue lors de la construction de l'event: {e}")
+        return HttpResponse(status=400)
+
+
+    # Gérer l'événement checkout.session.completed
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        customer_email = session.get('customer_details', {}).get('email')
+        stripe_customer_id = session.get('customer')
+        stripe_subscription_id = session.get('subscription')
+
+        logger.info(f"Checkout Session Completed: Email={customer_email}, CustID={stripe_customer_id}, SubID={stripe_subscription_id}")
+
+        if not customer_email or not stripe_customer_id or not stripe_subscription_id:
+            logger.error(f"Données manquantes dans l'événement checkout.session.completed: {session.id}")
+            return HttpResponse(status=400) # Erreur dans les données reçues
+
+        try:
+            # Essayer de trouver l'utilisateur par email
+            user, created = CustomUser.objects.get_or_create(
+                email=customer_email,
+                defaults={ # Valeurs à utiliser seulement si l'utilisateur est créé
+                    'stripe_customer_id': stripe_customer_id,
+                    'stripe_subscription_id': stripe_subscription_id,
+                    'subscription_status': 'active',
+                     # On le met actif, mais sans mot de passe utilisable pour l'instant
+                    'is_active': True,
+                    # On ne définit PAS de mot de passe ici.
+                }
+            )
+
+            if created:
+                # L'utilisateur vient d'être créé
+                logger.info(f"Nouvel utilisateur créé via webhook: {customer_email} (ID: {user.id})")
+                # *** TODO PHASE S3: Déclencher l'envoi de l'email "Définir votre mot de passe" ***
+                # send_set_password_email(user) # <- Fonction à créer
+                pass # Pour l'instant on ne fait rien de plus
+
+            else:
+                # L'utilisateur existait déjà (cas rare pour inscription, mais gérons-le)
+                logger.warning(f"Webhook pour un utilisateur existant: {customer_email}. Mise à jour des infos Stripe.")
+                user.stripe_customer_id = stripe_customer_id
+                user.stripe_subscription_id = stripe_subscription_id
+                user.subscription_status = 'active'
+                # S'il était inactif pour une raison, on le réactive
+                if not user.is_active:
+                    user.is_active = True
+                user.save()
+
+        except Exception as e:
+            logger.error(f"Erreur lors de la création/mise à jour de l'utilisateur via webhook: {e} pour email {customer_email}")
+            # Que faire ? Renvoyer 500 pour que Stripe réessaie ? Ou 200 pour ne pas bloquer ?
+            # Il vaut mieux logguer et renvoyer 200 pour éviter les boucles de webhook, mais surveiller les logs.
+            # return HttpResponse(status=500)
+            pass # On loggue l'erreur mais on renvoie 200 quand même
+
+    # Gérer d'autres types d'événements si nécessaire (ex: paiement échoué, abonnement annulé)
+    # elif event['type'] == 'invoice.payment_failed':
+    #     # ... logique pour marquer l'abonnement comme inactif ...
+    #     pass
+    # elif event['type'] == 'customer.subscription.deleted':
+    #      # ... logique pour marquer l'abonnement comme annulé ...
+    #     pass
+
+    # Accuser réception à Stripe
+    return HttpResponse(status=200)
