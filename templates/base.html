@@ -65,7 +65,7 @@
                                 aria-expanded="false"
                             >
                                 <i class="bi bi-person-circle"></i>
-                                {{ user.username }}
+                                {{ user.email }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
@@ -80,6 +80,7 @@
                                         Profil Entreprise
                                     </a>
                                 </li>
+                                <li><a class="dropdown-item" href="{% url 'user_profile' %}"><i class="bi bi-person-gear me-2"></i>Mon Profil & Compte</a></li> {# <<< LIEN AJOUTÉ #}
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>

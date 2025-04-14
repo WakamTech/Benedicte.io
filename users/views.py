@@ -24,7 +24,8 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib import messages # Pour messages succès/erreur
-
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 account_activation_token_generator = PasswordResetTokenGenerator() # Réutiliser le générateur
 
 logger = logging.getLogger(__name__)
@@ -317,3 +318,50 @@ def create_password_confirm(request, uidb64=None, token=None):
              'validlink': False,
         }
         return render(request, 'registration/create_password_form.html', context)
+
+
+@login_required
+def user_profile_view(request):
+    user = request.user
+    context = {
+        'step_title': "Mon Profil",
+        'user': user,
+        # Ajouter les formulaires de modification ici plus tard
+    }
+    return render(request, 'users/profile.html', context)
+
+@login_required
+def delete_account_view(request):
+    if request.method == 'POST':
+        user = request.user
+        logger.warning(f"Demande de suppression de compte pour l'utilisateur: {user.email} (ID: {user.id})")
+
+        # --- TODO: Logique d'annulation de l'abonnement Stripe ---
+        # C'est une étape CRUCIALE pour éviter que l'utilisateur continue d'être facturé !
+        # Il faut utiliser l'API Stripe pour annuler l'abonnement user.stripe_subscription_id
+        # try:
+        #    if user.stripe_subscription_id:
+        #        stripe.Subscription.delete(user.stripe_subscription_id) # Ou .cancel() selon le comportement voulu
+        #        logger.info(f"Abonnement Stripe {user.stripe_subscription_id} annulé pour {user.email}.")
+        # except Exception as e:
+        #     logger.error(f"Erreur lors de l'annulation de l'abonnement Stripe {user.stripe_subscription_id} pour {user.email}: {e}")
+        #     # Que faire ? Empêcher la suppression ? Prévenir l'utilisateur ?
+        #     messages.error(request, "Impossible d'annuler automatiquement votre abonnement Stripe. Veuillez le faire manuellement ou contacter le support.")
+        #     return redirect('user_profile') # Ne pas supprimer le compte Django tant que l'abo est actif ?
+
+        # Suppression de l'utilisateur Django (supprime aussi les données liées par CASCADE si configuré)
+        try:
+            user_email_for_log = user.email # Garder l'email pour le log
+            user.delete()
+            logout(request) # Déconnecter l'utilisateur
+            messages.success(request, "Votre compte a été supprimé avec succès.")
+            logger.info(f"Compte utilisateur supprimé avec succès: {user_email_for_log}")
+            return redirect('home') # Rediriger vers l'accueil
+        except Exception as e:
+             logger.error(f"Erreur lors de la suppression du compte Django pour {user_email_for_log}: {e}")
+             messages.error(request, "Une erreur s'est produite lors de la suppression de votre compte.")
+             return redirect('user_profile')
+
+    else:
+        # Rediriger si la méthode n'est pas POST
+        return redirect('user_profile')
