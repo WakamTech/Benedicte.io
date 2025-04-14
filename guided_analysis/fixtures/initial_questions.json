@@ -1,0 +1,662 @@
+[
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 1,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "Ce produit a-t-il un potentiel de marché suffisant ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Décrivez le marché cible, sa taille estimée, les besoins clients..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 2,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "Combien d’unités dois-je vendre pour atteindre la rentabilité ?",
+            "response_type": "number",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Estimation du seuil de rentabilité en volume ou CA"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 3,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "Quelles ressources dois-je mobiliser pour réussir ce lancement ?",
+            "response_type": "textarea",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "RH, budget marketing, équipement, R&D..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 4,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "Quels sont les risques majeurs associés à ce lancement ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Concurrentiels, financiers, opérationnels, techniques..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 5,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "Est-ce que ce nouveau service cannibalise mon offre existante ?",
+            "response_type": "boolean",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Partiellement (expliquez)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 6,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "Quel est le meilleur canal de lancement (web, retail, B2B…) ?",
+            "response_type": "text",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Précisez le canal principal envisagé"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 7,
+        "fields": {
+            "axis_key": "new_product",
+            "question_text": "À quelle vitesse puis-je espérer un retour sur investissement ?",
+            "response_type": "text",
+            "order": 6,
+            "is_required": false,
+            "placeholder_text": "Estimation en mois ou années"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 8,
+        "fields": {
+            "axis_key": "new_market",
+            "question_text": "Quel est le potentiel de ce marché comparé à mon marché actuel ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Analyse comparative : taille, croissance, concurrence..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 9,
+        "fields": {
+            "axis_key": "new_market",
+            "question_text": "Quelles adaptations sont nécessaires pour réussir dans ce pays/région ?",
+            "response_type": "textarea",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Produit, langue, culture, réglementation..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 10,
+        "fields": {
+            "axis_key": "new_market",
+            "question_text": "Quelles sont les principales barrières d’entrée ?",
+            "response_type": "textarea",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Réglementaires, culturelles, logistiques, concurrentielles..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 11,
+        "fields": {
+            "axis_key": "new_market",
+            "question_text": "Quelle stratégie commerciale adopter dans ce nouveau contexte ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Prix, distribution, marketing, partenariats..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 12,
+        "fields": {
+            "axis_key": "new_market",
+            "question_text": "Est-ce plus rentable de passer par un distributeur ou d'y aller en direct ?",
+            "response_type": "text",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Argumentez votre choix préféré"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 13,
+        "fields": {
+            "axis_key": "new_market",
+            "question_text": "Ce marché présente-t-il un bon équilibre entre opportunité et risque ?",
+            "response_type": "textarea",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Évaluation subjective basée sur les points précédents"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 14,
+        "fields": {
+            "axis_key": "optimize_model",
+            "question_text": "Quels leviers puis-je actionner pour augmenter ma marge ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Augmentation prix, réduction coûts directs, optimisation processus..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 15,
+        "fields": {
+            "axis_key": "optimize_model",
+            "question_text": "Où se situent mes plus gros coûts cachés ?",
+            "response_type": "textarea",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Inefficacités, non-qualité, temps perdu, stocks dormants..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 16,
+        "fields": {
+            "axis_key": "optimize_model",
+            "question_text": "Est-ce que mon modèle est encore adapté à mon marché cible ?",
+            "response_type": "boolean",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / A adapter (expliquez)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 17,
+        "fields": {
+            "axis_key": "optimize_model",
+            "question_text": "Puis-je proposer une offre plus rentable sans perte de valeur perçue ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Idées d'optimisation de l'offre (simplification, options...)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 18,
+        "fields": {
+            "axis_key": "optimize_model",
+            "question_text": "Quel serait l’impact d’un changement de prix de 10 % (hausse ou baisse) ?",
+            "response_type": "textarea",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Indiquez hausse ou baisse et estimez l'impact sur volume/CA/marge"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 19,
+        "fields": {
+            "axis_key": "optimize_model",
+            "question_text": "Faut-il que je passe à un abonnement / freemium / offre groupée ?",
+            "response_type": "text",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Quel modèle de revenus alternatif envisagez-vous ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 20,
+        "fields": {
+            "axis_key": "funding",
+            "question_text": "Combien puis-je lever sans trop diluer ma participation ?",
+            "response_type": "number",
+            "order": 0,
+            "is_required": false,
+            "placeholder_text": "Montant maximum envisagé en €"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 21,
+        "fields": {
+            "axis_key": "funding",
+            "question_text": "Quel est l’impact d’une levée de 500k€ (ou autre montant) sur mes objectifs à 2 ans ?",
+            "response_type": "textarea",
+            "order": 1,
+            "is_required": true,
+            "placeholder_text": "Précisez le montant et décrivez l'impact attendu (croissance, rentabilité...)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 22,
+        "fields": {
+            "axis_key": "funding",
+            "question_text": "Est-il préférable de faire appel à des investisseurs ou à un prêt bancaire ?",
+            "response_type": "text",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Votre préférence et pourquoi"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 23,
+        "fields": {
+            "axis_key": "funding",
+            "question_text": "Quel plan de croissance justifie cette levée / ce financement ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": true,
+            "placeholder_text": "Décrivez les grandes lignes du plan (actions, objectifs)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 24,
+        "fields": {
+            "axis_key": "funding",
+            "question_text": "Comment répartir ce financement (RH, R&D, marketing, infra…) ?",
+            "response_type": "textarea",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Ventilation estimée des postes de dépenses"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 25,
+        "fields": {
+            "axis_key": "funding",
+            "question_text": "À quel horizon le retour sur investissement est-il visible ?",
+            "response_type": "text",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Estimation en mois ou années"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 26,
+        "fields": {
+            "axis_key": "team",
+            "question_text": "Quel est l’impact attendu d’un nouveau commercial sur mon chiffre d’affaires ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Estimation chiffrée ou qualitative"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 27,
+        "fields": {
+            "axis_key": "team",
+            "question_text": "Est-il plus rentable de recruter en interne ou de sous-traiter cette fonction ?",
+            "response_type": "text",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Votre préférence et arguments (coût, flexibilité, expertise...)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 28,
+        "fields": {
+            "axis_key": "team",
+            "question_text": "À partir de quel volume d’activité (CA, clients, projets...) dois-je recruter ?",
+            "response_type": "text",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Seuil déclencheur envisagé"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 29,
+        "fields": {
+            "axis_key": "team",
+            "question_text": "Quel est le ROI attendu d’un profil marketing senior (ou autre poste clé) ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Précisez le poste et l'impact attendu (notoriété, leads, ventes...)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 30,
+        "fields": {
+            "axis_key": "team",
+            "question_text": "Combien me coûte réellement un nouveau salarié sur 12 mois (salaire chargé + coûts indirects) ?",
+            "response_type": "number",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Estimation du coût total annuel en €"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 31,
+        "fields": {
+            "axis_key": "team",
+            "question_text": "Ce recrutement améliore-t-il ma capacité à scaler (passer à l'échelle) ?",
+            "response_type": "boolean",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Expliquez"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 32,
+        "fields": {
+            "axis_key": "automation",
+            "question_text": "Quel est le gain de temps moyen estimé par cette automatisation/digitalisation ?",
+            "response_type": "text",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Estimation en heures/semaine, % de temps gagné..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 33,
+        "fields": {
+            "axis_key": "automation",
+            "question_text": "Combien puis-je économiser en digitalisant ce processus ?",
+            "response_type": "number",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Estimation de l'économie annuelle en € (coûts directs/indirects)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 34,
+        "fields": {
+            "axis_key": "automation",
+            "question_text": "Est-ce que cette automatisation impacte positivement ma rentabilité ?",
+            "response_type": "boolean",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Comment ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 35,
+        "fields": {
+            "axis_key": "automation",
+            "question_text": "Quelle charge de travail cela permet de redistribuer ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Vers quelles tâches à plus forte valeur ajoutée ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 36,
+        "fields": {
+            "axis_key": "automation",
+            "question_text": "Quels sont les coûts cachés de cette transformation ?",
+            "response_type": "textarea",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Formation, maintenance, résistance au changement, dépendance outil..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 37,
+        "fields": {
+            "axis_key": "automation",
+            "question_text": "Ce projet permet-il de différencier mon offre ?",
+            "response_type": "boolean",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Comment ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 38,
+        "fields": {
+            "axis_key": "diversify",
+            "question_text": "Quelle nouvelle activité est la plus compatible avec mes ressources actuelles ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Compétences internes, équipement, réseau..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 39,
+        "fields": {
+            "axis_key": "diversify",
+            "question_text": "Dois-je pivoter vers un modèle d’abonnement ou rester à l’acte ?",
+            "response_type": "text",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Votre préférence argumentée"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 40,
+        "fields": {
+            "axis_key": "diversify",
+            "question_text": "Est-ce plus rentable de proposer des services que des produits (ou inversement) ?",
+            "response_type": "text",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Votre analyse coût/marge/volume"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 41,
+        "fields": {
+            "axis_key": "diversify",
+            "question_text": "Quels risques sont associés à un repositionnement partiel ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Perte clients actuels, dilution image, complexité opérationnelle..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 42,
+        "fields": {
+            "axis_key": "diversify",
+            "question_text": "Quel impact sur mon image de marque ou ma cible client ?",
+            "response_type": "textarea",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Perception du changement par le marché"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 43,
+        "fields": {
+            "axis_key": "diversify",
+            "question_text": "Est-ce que cette diversification crée de nouvelles synergies internes ?",
+            "response_type": "boolean",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Lesquelles ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 44,
+        "fields": {
+            "axis_key": "external_change",
+            "question_text": "Quel est l’impact simulé d’une hausse de 15 % des coûts d’approvisionnement ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Impact sur marge, prix de vente, rentabilité..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 45,
+        "fields": {
+            "axis_key": "external_change",
+            "question_text": "Si mes prix de vente sont gelés, combien de temps mon modèle reste-t-il viable ?",
+            "response_type": "text",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Estimation en mois/années ou seuil critique"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 46,
+        "fields": {
+            "axis_key": "external_change",
+            "question_text": "Une nouvelle réglementation menace-t-elle mon business model ?",
+            "response_type": "textarea",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Décrivez la réglementation et l'impact potentiel"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 47,
+        "fields": {
+            "axis_key": "external_change",
+            "question_text": "Que se passe-t-il si mon concurrent baisse drastiquement ses prix ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Scénario de réaction : suivre, différencier, ignorer ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 48,
+        "fields": {
+            "axis_key": "external_change",
+            "question_text": "Quel scénario d’inflation affecte le plus ma structure de coûts ?",
+            "response_type": "textarea",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Inflation sur matières premières, salaires, énergie ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 49,
+        "fields": {
+            "axis_key": "external_change",
+            "question_text": "Suis-je prêt à faire face à une crise économique sectorielle ?",
+            "response_type": "textarea",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Mesures de résilience en place ou à prévoir"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 50,
+        "fields": {
+            "axis_key": "m_and_a",
+            "question_text": "Quelle est la complémentarité stratégique entre les deux structures ?",
+            "response_type": "textarea",
+            "order": 0,
+            "is_required": true,
+            "placeholder_text": "Marchés, produits, compétences, culture..."
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 51,
+        "fields": {
+            "axis_key": "m_and_a",
+            "question_text": "Est-ce que cette acquisition/fusion crée des économies d’échelle ?",
+            "response_type": "boolean",
+            "order": 1,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Où ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 52,
+        "fields": {
+            "axis_key": "m_and_a",
+            "question_text": "Quel est le coût réel d’intégration organisationnelle ?",
+            "response_type": "number",
+            "order": 2,
+            "is_required": false,
+            "placeholder_text": "Estimation en € (coûts directs et indirects)"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 53,
+        "fields": {
+            "axis_key": "m_and_a",
+            "question_text": "Quel est l’impact sur mon EBITDA ou ma valorisation ?",
+            "response_type": "textarea",
+            "order": 3,
+            "is_required": false,
+            "placeholder_text": "Estimation de l'impact financier à court/moyen terme"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 54,
+        "fields": {
+            "axis_key": "m_and_a",
+            "question_text": "Est-ce que ce partenariat renforce mon accès au marché ?",
+            "response_type": "boolean",
+            "order": 4,
+            "is_required": false,
+            "placeholder_text": "Oui / Non / Comment ?"
+        }
+    },
+    {
+        "model": "guided_analysis.guidingquestion",
+        "pk": 55,
+        "fields": {
+            "axis_key": "m_and_a",
+            "question_text": "Combien de temps faut-il pour que l’investissement soit rentabilisé ?",
+            "response_type": "text",
+            "order": 5,
+            "is_required": false,
+            "placeholder_text": "Estimation en mois ou années (payback period)"
+        }
+    }
+]
