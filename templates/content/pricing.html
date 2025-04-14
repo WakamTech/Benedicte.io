@@ -1,0 +1,44 @@
+<!-- templates/content/pricing.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5 text-center">
+    <h1 class="mb-4"><i class="bi bi-tags me-2"></i>{{ step_title }}</h1>
+    <p class="lead col-lg-8 mx-auto">Accédez à des analyses stratégiques illimitées pour éclairer toutes vos décisions.</p>
+
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-5 col-md-7">
+            <div class="card shadow border-primary"> {# Mettre en évidence l'offre unique #}
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h4 mb-0 fw-normal">Abonnement Mensuel</h2>
+                </div>
+                <div class="card-body p-4">
+                    <h3 class="card-title pricing-card-title mb-4">
+                        9,99 €<small class="text-muted fw-light">/mois</small>
+                    </h3>
+                    <ul class="list-unstyled mt-3 mb-4 text-start">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Analyses illimitées</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Tous les types de scénarios</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export PDF & Excel</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Sauvegarde de vos scénarios</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Support par email</li>
+                        {# <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Fonctionnalité collaborative (bientôt)</li> #}
+                    </ul>
+                    {# Bouton d'inscription pointant vers le checkout Stripe #}
+                     {% if user.is_authenticated and user.is_subscribed_active %}
+                          <a href="{% url 'stripe_billing_portal' %}" class="w-100 btn btn-lg btn-outline-primary">Gérer mon abonnement</a>
+                     {% elif user.is_authenticated %}
+                          <a href="{% url 'start_payment' %}" class="w-100 btn btn-lg btn-primary">S'abonner maintenant</a>
+                     {% else %}
+                          <a href="{% url 'start_payment' %}" class="w-100 btn btn-lg btn-primary">Créer un compte et s'abonner</a>
+                     {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="mt-4 text-muted"><small>Tarif hors taxes. L'abonnement est sans engagement et peut être annulé à tout moment via votre espace client.</small></p>
+</div>
+{% endblock %}

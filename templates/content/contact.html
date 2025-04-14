@@ -1,0 +1,63 @@
+<!-- templates/content/contact.html -->
+{% extends 'base.html' %}
+{% block title %}{{ step_title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>
+        <i class="bi bi-envelope me-2"></i>{{ step_title }}
+    </h1>
+    <p class="lead">Vous avez une question ou besoin d'aide ? Contactez-nous !</p>
+    <hr>
+    {# Section Informations de Contact #}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <h5>Par Email :</h5>
+            <p>
+                <a href="mailto:contact@benedicte.io">contact@benedicte.io</a>
+            </p>
+            <p>
+                <small>Nous nous efforçons de répondre dans les 24-48h ouvrées.</small>
+            </p>
+        </div>
+        {# Optionnel: Ajouter Adresse / Téléphone si pertinent #}
+        <div class="col-md-6 mb-3">
+            <h5>Adresse :</h5>
+            <p>123 Rue Imaginaire
+                <br>75000 Paris, France
+            </p>
+        </div>
+    </div>
+    {# Section Formulaire de Contact (à implémenter plus tard) #}
+    <hr>
+    <h3 class="h4 mt-4">Ou envoyez-nous un message :</h3>
+    <p class="text-muted">(Fonctionnalité à venir)</p>
+    {# Ici viendra le formulaire de contact #}
+    <form>
+        <fieldset disabled>
+            <div class="mb-3">
+                <label for="contactName" class="form-label">Votre Nom</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="contactName"
+                    placeholder="Prénom Nom"
+                >
+            </div>
+            <div class="mb-3">
+                <label for="contactEmail" class="form-label">Votre Email</label>
+                <input
+                    type="email"
+                    class="form-control"
+                    id="contactEmail"
+                    placeholder="email@example.com"
+                >
+            </div>
+            <div class="mb-3">
+                <label for="contactMessage" class="form-label">Votre Message</label>
+                <textarea class="form-control" id="contactMessage" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Envoyer (désactivé)</button>
+        </fieldset>
+    </form>
+</div>
+{% endblock %}

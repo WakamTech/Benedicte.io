@@ -49,7 +49,9 @@ def send_set_password_email(user, request=None):
     html_message = render_to_string('emails/set_password_email.html', context)
     # Corps de l'email en texte brut (fallback)
     plain_message = render_to_string('emails/set_password_email.txt', context)
-
+    
+    
+    logger.info(f"User email {user.email}")
     try:
         send_mail(
             subject,

@@ -229,8 +229,9 @@ def stripe_webhook(request):
 
         try:
             # Essayer de trouver l'utilisateur par email
+            cleaned_email = customer_email.strip().strip("'").strip('"') if customer_email else None
             user, created = CustomUser.objects.get_or_create(
-                email=customer_email,
+                email=cleaned_email,
                 defaults={ # Valeurs à utiliser seulement si l'utilisateur est créé
                     'stripe_customer_id': stripe_customer_id,
                     'stripe_subscription_id': stripe_subscription_id,

@@ -1,0 +1,21 @@
+<!-- templates/content/terms_conditions.html -->
+{% extends 'base.html' %}
+{% block title %}{{ step_title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1><i class="bi bi-file-text me-2"></i>{{ step_title }}</h1>
+    <p class="text-muted">Dernière mise à jour : [Date de mise à jour]</p>
+    <hr>
+    <p><em>Contenu des CGV/CGU à fournir par le client.</em></p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
+     <h2>Article 1 : Objet</h2>
+    <p>...</p>
+     <h2>Article 2 : Accès au service</h2>
+    <p>...</p>
+     <h2>Article 3 : Tarifs et Paiement</h2>
+    <p>...</p>
+     <h2>Article 4 : Obligations de l'utilisateur</h2>
+    <p>...</p>
+    {# Ajouter toutes les sections nécessaires #}
+</div>
+{% endblock %}
