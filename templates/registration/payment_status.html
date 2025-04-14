@@ -1,0 +1,35 @@
+<!-- templates/registration/payment_status.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+             <div class="card shadow-sm border-light">
+                 <div class="card-body p-4 p-md-5">
+                    {% if is_cancelled %}
+                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
+                    {% else %}
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    {% endif %}
+                    <h1 class="h3 card-title mt-3 mb-3">{{ step_title }}</h1>
+                    <p class="lead text-muted">
+                       {{ message|linebreaksbr }}
+                    </p>
+                    {# Optionnel: Afficher l'ID de session pour debug #}
+                    {# {% if session_id %}<p><small class="text-muted">ID Session: {{ session_id }}</small></p>{% endif %} #}
+                    <div class="mt-4">
+                         {% if is_cancelled %}
+                             <a href="{% url 'start_payment' %}" class="btn btn-warning me-2">Réessayer l'inscription</a>
+                         {% endif %}
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

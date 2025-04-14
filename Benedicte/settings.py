@@ -65,6 +65,11 @@ USERNAME_FIELD = 'email'            # <<< Utiliser l'email pour se connecter
 EMAIL_FIELD = 'email'               # <<< Champ utilisé pour les fonctions email
 EMAIL_REQUIRED = True              # <<< L'email est obligatoire
 USERNAME_REQUIRED = False           # <<< Le champ 'username' n'est plus requis par Django
+
+# settings.py
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default=None)
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default=None)
+STRIPE_PRICE_ID = env('STRIPE_PRICE_ID', default=None)
      
 # Application definition
 
