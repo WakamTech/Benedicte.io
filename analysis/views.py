@@ -13,6 +13,15 @@ from django.forms import formset_factory, CharField, Textarea, BooleanField, Dec
 from django import forms # Import principal pour forms
 from django.contrib import messages
 import logging, json
+from datetime import datetime # Importez la CLASSE datetime depuis le MODULE datetime
+
+import json
+from django.contrib import messages # Importer le framework de messages Django
+from datetime import datetime # Importez la CLASSE datetime depuis le MODULE datetime
+from django.http import HttpResponse, Http404 # Importer HttpResponse, Http404
+from .report_utils import generate_pdf_report, generate_excel_report # Importer les nouvelles fonctions
+
+logger = logging.getLogger(__name__)  # Initialiser logger pour les vues
 
 logger = logging.getLogger(__name__)
 
