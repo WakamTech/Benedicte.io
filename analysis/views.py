@@ -17,8 +17,21 @@ from datetime import datetime # Importez la CLASSE datetime depuis le MODULE dat
 from django.http import HttpResponse, Http404 # Importer HttpResponse, Http404
 from .report_utils import generate_pdf_report, generate_excel_report # Importer les nouvelles fonctions
 
+from guided_analysis.models import GuidingQuestion, UserResponse
+from django.forms import formset_factory, CharField, Textarea, BooleanField, DecimalField, ChoiceField # Pour créer formulaire dynamique
+from django.http import Http404
+
 logger = logging.getLogger(__name__)  # Initialiser logger pour les vues
 
+# --- Formulaire Dynamique pour les Réponses ---
+# On crée une classe de base simple pour une réponse, puis on utilisera un formset
+class BaseResponseForm(forms.Form):
+    answer_text = CharField(
+        widget=Textarea(attrs={'rows': 3, 'class': 'form-control form-control-sm'}),
+        required=False # La validation 'required' sera gérée dynamiquement
+    )
+    # Ajouter d'autres types si besoin (number, boolean) mais Textarea peut tout contenir
+    question_id = forms.IntegerField(widget=forms.HiddenInput()) # Pour savoir à quelle question on répond
 
 @login_required
 def request_scenario_view(request):
@@ -53,50 +66,162 @@ def request_scenario_view(request):
         )
         messages.warning(request, "Veuillez d'abord renseigner les informations de votre entreprise.")
         return redirect("company_profile_step")
+    
+    # Étape 1 de cette vue : Sélectionner l'axe (si pas encore fait)
+    # On utilise la session pour stocker l'axe choisi temporairement
+    selected_axis = request.session.get('selected_analysis_axis', None)
+    axis_selection_form = ScenarioRequestForm(initial={'request_type': selected_axis}) # Pré-remplir si déjà choisi
 
-    if request.method == "POST":
-        form = ScenarioRequestForm(request.POST)
-        if form.is_valid():
-            scenario_request = form.save(commit=False)
-            scenario_request.user = request.user
-            scenario_request.company_profile = company_profile
-            scenario_request.status = "pending"  # Commence en attente
-            scenario_request.save()
-            logger.info(
-                f"Demande de scénario {scenario_request.id} créée pour l'utilisateur {request.user.id}"
-            )
+    # Étape 2 de cette vue : Afficher/Traiter les questions guidées
+    guiding_questions = []
+    ResponseFormSet = None # Sera défini si un axe est choisi
+    formset = None
 
-            # --- Déclenchement de l'analyse (Réelle ou Mock) ---
-            if settings.USE_MOCK_ANALYSIS:
-                # Utiliser la simulation
-                logger.info(
-                    f"Utilisation de la SIMULATION d'analyse pour la demande {scenario_request.id}"
-                )
-                create_mock_analysis(
-                    scenario_request.id
-                )  # Appelle la fonction de simulation
+    if selected_axis and selected_axis != 'other': # Pas de questions guidées pour 'Autre'
+        guiding_questions = GuidingQuestion.objects.filter(axis_key=selected_axis).order_by('order')
+        if guiding_questions:
+            # Créer un FormSet Dynamique basé sur les questions récupérées
+            ResponseFormSet = formset_factory(BaseResponseForm, extra=0) # extra=0 car on peuple avec les questions existantes
+
+            # Préparer les données initiales pour le formset (une form par question)
+            initial_data = [{'question_id': q.id} for q in guiding_questions]
+            formset = ResponseFormSet(request.POST or None, initial=initial_data, prefix='response') # Utiliser un préfixe
+
+    if request.method == 'POST':
+        # Identifier quelle partie du formulaire est soumise
+        if 'submit_axis' in request.POST: # L'utilisateur a choisi un axe
+            axis_selection_form = ScenarioRequestForm(request.POST)
+            if axis_selection_form.is_valid():
+                selected_axis = axis_selection_form.cleaned_data['request_type']
+                request.session['selected_analysis_axis'] = selected_axis
+                 # Si 'Autre', on demande la description et on saute les questions guidées
+                if selected_axis == 'other':
+                     # Créer directement la demande et lancer l'analyse (ou aller à une étape de description libre)
+                     # Pour l'instant, on redirige vers la même vue pour que l'utilisateur remplisse la description plus bas
+                     logger.info(f"Axe 'Autre' choisi par {request.user.email}. Description requise.")
+                     # Recréer le formset vide pour l'affichage
+                     if ResponseFormSet:
+                         formset = ResponseFormSet(initial=initial_data, prefix='response')
+                     # Ne pas rediriger, laisser l'utilisateur remplir la description si besoin
+                else:
+                    # Recharger la page pour afficher les questions de l'axe choisi
+                    # On recrée le formset basé sur le nouvel axe
+                    guiding_questions = GuidingQuestion.objects.filter(axis_key=selected_axis).order_by('order')
+                    initial_data = [{'question_id': q.id} for q in guiding_questions]
+                    ResponseFormSet = formset_factory(BaseResponseForm, extra=0)
+                    formset = ResponseFormSet(initial=initial_data, prefix='response') # Recréer le formset vide pour l'affichage
+                    logger.info(f"Axe '{selected_axis}' choisi par {request.user.email}. Affichage questions.")
+                    # Ne pas rediriger, on reste sur la page pour afficher les questions
+
+        elif 'submit_responses' in request.POST and formset: # L'utilisateur a soumis les réponses aux questions guidées
+             # On a besoin des infos de l'axe et de la description potentielle du formulaire d'axe
+             # Il faudrait peut-être combiner les deux forms ou récupérer l'axe de la session
+             final_axis_selection_form = ScenarioRequestForm(request.POST) # Récupérer aussi la description si besoin
+
+             if formset.is_valid() and final_axis_selection_form.is_valid() :
+                 # Créer la ScenarioRequest principale
+                 scenario_request = final_axis_selection_form.save(commit=False)
+                 scenario_request.user = request.user
+                 scenario_request.company_profile = company_profile
+                 scenario_request.status = 'pending'
+                 # Assurer que request_type est bien celui de la session ou du formulaire
+                 scenario_request.request_type = selected_axis
+                 scenario_request.save()
+                 logger.info(f"Demande de scénario {scenario_request.id} (axe: {selected_axis}) créée pour {request.user.email}")
+
+                 # Sauvegarder les réponses guidées
+                 for form in formset:
+                     if form.is_valid(): # Vérifier chaque form du formset
+                         question_id = form.cleaned_data.get('question_id')
+                         answer = form.cleaned_data.get('answer_text')
+                         if question_id and answer is not None: # Sauver seulement si réponse non vide? A décider.
+                              try:
+                                  question = GuidingQuestion.objects.get(pk=question_id)
+                                  # Vérifier si la réponse est requise
+                                  if question.is_required and not answer:
+                                      # Normalement la validation du formset gère ça si 'required=True' est dynamique
+                                      # Mais on peut ajouter une sécurité
+                                      form.add_error('answer_text', 'Cette réponse est obligatoire.')
+                                      raise forms.ValidationError("Erreur de validation interne.")
+
+                                  UserResponse.objects.create(
+                                       scenario_request=scenario_request,
+                                       question=question,
+                                       answer_text=answer
+                                  )
+                              except GuidingQuestion.DoesNotExist:
+                                   logger.error(f"Question guidée ID {question_id} non trouvée lors de la sauvegarde des réponses pour SR {scenario_request.id}")
+                              except forms.ValidationError:
+                                   # Gérer l'erreur de validation levée
+                                   pass # L'erreur sera ré-affichée dans le template
+
+                 # Si des erreurs ont été ajoutées aux forms du formset, ne pas continuer
+                 if not formset.is_valid(): # Revérifier après ajout d'erreurs potentiel
+                     messages.error(request,"Veuillez corriger les erreurs dans les réponses.")
+                 else:
+                      # Nettoyer la session
+                      if 'selected_analysis_axis' in request.session:
+                          del request.session['selected_analysis_axis']
+
+                      # --- Déclenchement de l'analyse ---
+                      # La logique ici reste la même, perform_analysis devra être adapté en Q4
+                      if settings.USE_MOCK_ANALYSIS:
+                          create_mock_analysis(scenario_request.id)
+                      else:
+                          perform_analysis(scenario_request.id)
+
+                      return redirect(reverse('request_confirmation', args=[scenario_request.id]))
+
+             else:
+                # Le formset ou le formulaire d'axe n'est pas valide
+                messages.error(request,"Veuillez corriger les erreurs ci-dessous.")
+                # L'erreur sera affichée dans le template
+
+        # --- Gestion spéciale si l'axe est 'Autre' ---
+        elif 'submit_other_description' in request.POST:
+            final_axis_selection_form = ScenarioRequestForm(request.POST)
+            if final_axis_selection_form.is_valid():
+                 selected_axis = final_axis_selection_form.cleaned_data['request_type']
+                 description = final_axis_selection_form.cleaned_data['user_description']
+                 if selected_axis == 'other' and not description:
+                      final_axis_selection_form.add_error('user_description',"La description est obligatoire pour le type 'Autre'.")
+                      messages.error(request,"La description est obligatoire pour le type 'Autre'.")
+                 else:
+                     # Créer la ScenarioRequest directement
+                     scenario_request = final_axis_selection_form.save(commit=False)
+                     scenario_request.user = request.user
+                     scenario_request.company_profile = company_profile
+                     scenario_request.status = 'pending'
+                     scenario_request.request_type = selected_axis # Devrait être 'other'
+                     scenario_request.save()
+                     logger.info(f"Demande de scénario {scenario_request.id} (axe: Autre) créée pour {request.user.email}")
+
+                     # Nettoyer la session
+                     if 'selected_analysis_axis' in request.session:
+                         del request.session['selected_analysis_axis']
+
+                     # --- Déclenchement de l'analyse ---
+                     if settings.USE_MOCK_ANALYSIS: create_mock_analysis(scenario_request.id)
+                     else: perform_analysis(scenario_request.id)
+
+                     return redirect(reverse('request_confirmation', args=[scenario_request.id]))
             else:
-                # Utiliser le traitement réel (si les clés sont configurées et USE_MOCK_ANALYSIS=False)
-                logger.info(
-                    f"Déclenchement de l'analyse REELLE pour la demande {scenario_request.id}"
-                )
-                analysis_successful = perform_analysis(
-                    scenario_request.id
-                )  # Appelle la vraie fonction
-                if not analysis_successful:
-                    logger.error(
-                        f"L'analyse REELLE a échoué pour la demande {scenario_request.id}. Vérifiez les logs précédents."
-                    )
-                    # Le statut sera mis à 'failed' par perform_analysis en cas d'erreur
+                 messages.error(request,"Veuillez corriger les erreurs ci-dessous.")
 
-            # Rediriger vers la confirmation (qui montrera le statut final)
-            return redirect(reverse("request_confirmation", args=[scenario_request.id]))
+    # else:
+    #     form = ScenarioRequestForm()
 
-    else:
-        form = ScenarioRequestForm()
-
-    context = {"form": form, "step_title": "Étape 5/5 : Quel est votre projet ?", 'prev_step_url': reverse('company_products_step'),}
-    return render(request, "analysis/request_scenario.html", context)
+    # --- Préparation Contexte ---
+    context = {
+        'step_title': f"Étape 5/5 : {dict(ScenarioRequest.SCENARIO_TYPE_CHOICES).get(selected_axis, 'Votre Projet')}" if selected_axis else "Étape 5/5 : Choix de l'Analyse",
+        'axis_selection_form': axis_selection_form,
+        'selected_axis': selected_axis,
+        'guiding_questions': guiding_questions, # Liste des questions pour l'axe choisi
+        'response_formset': formset, # Le formset pour les réponses
+        'prev_step_url': reverse('company_products_step'),
+    }
+    # On utilisera un template différent pour afficher le formset
+    return render(request, 'analysis/request_scenario_guided.html', context)
 
 
 @login_required
