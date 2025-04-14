@@ -147,6 +147,32 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# settings.py
+
+# ... autres settings ...
+
+# Configuration Email (Backend Console pour Développement)
+# Voir : https://docs.djangoproject.com/en/stable/topics/email/#console-backend
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # --- CONFIGURATION PRODUCTION (à adapter selon votre fournisseur) ---
+    # Exemple avec variables d'environnement pour un service SMTP
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = env('EMAIL_HOST', default='smtp.example.com') # Ex: smtp.sendgrid.net
+    EMAIL_PORT = env.int('EMAIL_PORT', default=587)           # Port standard TLS
+    EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')       # Votre username SMTP
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='') # Votre mot de passe SMTP ou clé API
+    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@benedicte.io') # Email expéditeur par défaut
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL # Email pour les erreurs serveur
+    ADMINS = [('Admin Name', 'admin@benedicte.io')] # Email(s) pour recevoir les erreurs
+    MANAGERS = ADMINS
+    # --- FIN CONFIG PRODUCTION ---
+
+# Email expéditeur par défaut (utilisé même avec backend console)
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='Benedicte.io <noreply@example.com>')
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -189,3 +215,62 @@ if RENDER_EXTERNAL_HOSTNAME:
      # Render utilise HTTPS
      CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 # Ajoutez https://votre_domaine.com si besoin
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False, # Important pour ne pas désactiver les loggers par défaut
+    'formatters': { # Définir comment les messages sont formatés
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': { # Définir où vont les messages
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple', # Utiliser le format simple pour la console
+        },
+        # Optionnel: Ajouter un handler pour écrire dans un fichier
+        # 'file': {
+        #     'level': 'DEBUG', # Capturer DEBUG et plus dans le fichier
+        #     'class': 'logging.FileHandler',
+        #     'filename': BASE_DIR / 'debug.log', # Chemin vers le fichier log
+        #     'formatter': 'verbose', # Utiliser le format détaillé pour le fichier
+        # },
+    },
+    'loggers': { # Définir le niveau pour des loggers spécifiques
+        'django': { # Logger par défaut de Django
+            'handlers': ['console'],
+            'level': 'INFO', # Afficher INFO et plus pour Django lui-même
+            'propagate': True,
+        },
+        'users': { # Logger de votre application 'users' (où est le webhook)
+            'handlers': ['console'],
+            # Afficher DEBUG et plus pour votre app SI settings.DEBUG est True
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False, # Ne pas remonter au logger parent (root)
+        },
+         'analysis': { # Faire de même pour les autres apps où vous mettez des logs
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+         'company': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        # Optionnel: Logger racine (capture tout ce qui n'est pas géré spécifiquement)
+        # 'root': {
+        #     'handlers': ['console'],
+        #     'level': 'WARNING', # Capturer seulement WARNING et plus pour le reste
+        # }
+    },
+}
+
+# settings.py
+APP_DOMAIN = env('APP_DOMAIN', default='localhost:8000' if DEBUG else 'votre_app.onrender.com')

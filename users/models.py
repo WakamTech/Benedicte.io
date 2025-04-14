@@ -36,9 +36,6 @@ class CustomUserManager(BaseUserManager):
 
 
 
-class CustomUserManager(BaseUserManager):
-    # ... (Manager reste inchangé) ...
-    pass # Mettez le code du manager ici s'il n'y est pas déjà
 
 class CustomUser(AbstractUser):
     username = models.CharField( # Inchangé

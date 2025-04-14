@@ -13,10 +13,19 @@ from .forms import CustomUserCreationForm, CustomAuthenticationForm
 import logging
 from django.urls import reverse
 from django.contrib import messages
+from .utils import send_set_password_email # Importer la fonction d'envoi
 
 from django.views.decorators.csrf import csrf_exempt # Important pour webhook
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import get_user_model # Pour récupérer CustomUser
+
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib import messages # Pour messages succès/erreur
+
+account_activation_token_generator = PasswordResetTokenGenerator() # Réutiliser le générateur
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +177,17 @@ def stripe_webhook(request):
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
     event = None
+    
+    # # --- LOGS DE DEBUG CRUCIAUX ---
+    # logger.debug(f"--- Stripe Webhook Received ---")
+    # logger.debug(f"Signature Header (sig_header): {sig_header}")
+    # # Logguer seulement les premiers et derniers caractères du payload pour éviter des logs trop longs
+    # payload_start = payload[:100] if isinstance(payload, bytes) else str(payload)[:100]
+    # payload_end = payload[-100:] if isinstance(payload, bytes) else str(payload)[-100:]
+    # logger.debug(f"Payload Start (type {type(payload)}): {payload_start}...")
+    # logger.debug(f"Payload End: ...{payload_end}")
+    # logger.debug(f"Endpoint Secret Used: {endpoint_secret[:5]}...{endpoint_secret[-5:]}") # Ne pas logger le secret entier
+    # # --- FIN LOGS DE DEBUG ---
 
     # Vérifier si le secret est configuré
     if not endpoint_secret:
@@ -224,6 +244,7 @@ def stripe_webhook(request):
                 logger.info(f"Nouvel utilisateur créé via webhook: {customer_email} (ID: {user.id})")
                 # *** TODO PHASE S3: Déclencher l'envoi de l'email "Définir votre mot de passe" ***
                 # send_set_password_email(user) # <- Fonction à créer
+                send_set_password_email(user, request=request)
                 pass # Pour l'instant on ne fait rien de plus
 
             else:
@@ -236,6 +257,7 @@ def stripe_webhook(request):
                 if not user.is_active:
                     user.is_active = True
                 user.save()
+                send_set_password_email(user, request=request)
 
         except Exception as e:
             logger.error(f"Erreur lors de la création/mise à jour de l'utilisateur via webhook: {e} pour email {customer_email}")
@@ -254,3 +276,44 @@ def stripe_webhook(request):
 
     # Accuser réception à Stripe
     return HttpResponse(status=200)
+
+
+def create_password_confirm(request, uidb64=None, token=None):
+    """Vue pour définir le mot de passe après inscription via Stripe."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = CustomUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token_generator.check_token(user, token):
+        # Le lien est valide
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save() # Définit et sauvegarde le nouveau mot de passe
+                # Optionnel: Marquer l'utilisateur comme pleinement actif si ce n'était pas déjà fait
+                if not user.is_active: # Si on avait mis is_active=False initialement
+                    user.is_active = True
+                    user.save(update_fields=['is_active'])
+                messages.success(request, "Votre mot de passe a été défini avec succès. Vous pouvez maintenant vous connecter.")
+                return redirect('login')
+            else:
+                 messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+        else:
+            form = SetPasswordForm(user)
+
+        context = {
+            'form': form,
+            'step_title': "Définir votre mot de passe",
+            'validlink': True,
+        }
+        return render(request, 'registration/create_password_form.html', context)
+    else:
+        # Lien invalide ou expiré
+        messages.error(request, "Le lien de définition de mot de passe est invalide ou a expiré.")
+        context = {
+             'step_title': "Lien invalide",
+             'validlink': False,
+        }
+        return render(request, 'registration/create_password_form.html', context)

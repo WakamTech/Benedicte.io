@@ -2,7 +2,7 @@
 from django.urls import path
 from .views import RegisterView, CustomLoginView, CustomLogoutView, home, start_stripe_checkout
 from .views import payment_success, payment_cancelled # Importer les nouvelles vues
-from .views import stripe_webhook # Importer la nouvelle vue
+from .views import stripe_webhook, create_password_confirm 
 
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
     path('subscribe/success/', payment_success, name='payment_success'),
     path('subscribe/cancelled/', payment_cancelled, name='payment_cancelled'),
     path('stripe-webhook/', stripe_webhook, name='stripe_webhook'),
+    path('create-password/<uidb64>/<token>/', create_password_confirm, name='create_password_confirm'),
 ]
