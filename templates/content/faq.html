@@ -1,0 +1,185 @@
+<!-- templates/content/faq.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}F.A.Q. - Questions Fréquentes{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="text-center mb-5">F.A.Q. - Questions Fréquentes</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+
+            {# Utilisation du composant Accordéon de Bootstrap #}
+            {# https://getbootstrap.com/docs/5.3/components/accordion/ #}
+            <div class="accordion" id="faqAccordion">
+
+                {# -- SECTION 1 — Comprendre Bénédicte -- #}
+                <h2 class="h4 mb-3 mt-4"><i class="bi bi-info-circle me-2 text-primary"></i>Comprendre Benedicte.io</h2>
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                           1. Benedicte.io, c’est quoi ?
+                        </button>
+                    </h3>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Bénédicte est une assistante virtuelle qui vous aide à prendre des décisions stratégiques grâce à des simulations de scénarios. Elle ne décide pas à votre place, mais elle éclaire vos options.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                           2. Est-ce du conseil professionnel ?
+                        </button>
+                    </h3>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Non. Bénédicte ne remplace pas un avocat ou un expert-comptable. Elle propose des analyses prospectives, mais ne donne pas de recommandations juridiques ou fiscales.
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                           3. À qui s’adresse Bénédicte ?
+                        </button>
+                    </h3>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            À toute personne qui développe un projet : entrepreneur·e, indépendant·e, responsable d’association, dirigeant·e de PME, incubateur, etc.
+                        </div>
+                    </div>
+                </div>
+
+                 {# -- SECTION 2 — Utilisation concrète -- #}
+                 <h2 class="h4 mb-3 mt-5"><i class="bi bi-joystick me-2 text-primary"></i>Utilisation Concrète</h2>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                           4. Quelles questions puis-je poser ?
+                        </button>
+                    </h3>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            	•	Dois-je recruter ? <br>
+                                •	Est-ce une bonne idée de lancer ce produit ? <br>
+                                •	Quel pays viser en premier ? <br>
+                                •	Comment financer ma croissance ? <br>
+                                Et plus encore. Vous testez, elle vous guide.
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingFive">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                           5. Sur quoi se basent ses réponses ?
+                        </button>
+                    </h3>
+                    <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                           Sur des modèles économiques éprouvés, de l’IA générative, des hypothèses cohérentes et vos propres données si vous les entrez. Vous gardez le contrôle.
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingSix">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                           6. Est-ce fiable ?
+                        </button>
+                    </h3>
+                    <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Les scénarios proposés sont logiques, argumentés, plausibles. Ce ne sont pas des prédictions, mais des projections pour vous aider à anticiper.
+                        </div>
+                    </div>
+                </div>
+
+                {# -- SECTION 3 — Tarifs & accès -- #}
+                 <h2 class="h4 mb-3 mt-5"><i class="bi bi-credit-card me-2 text-primary"></i>Tarifs & Accès</h2>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingSeven">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                           7. Est-ce que c’est gratuit ?
+                        </button>
+                    </h3>
+                    <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                           Une version gratuite est disponible pour explorer vos premières questions. L’accès à des scénarios avancés ou à l’export PDF nécessite un abonnement premium. (Note: Les détails des tarifs seront sur la page Tarifs dédiée).
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingEight">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+                           8. Est-ce que je peux collaborer avec d'autres ?
+                        </button>
+                    </h3>
+                    <div id="collapseEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                           Oui. Vous pouvez inviter vos collègues, partenaires ou mentors à travailler sur un même scénario. (Note: La fonctionnalité collaborative n'est pas incluse dans la version actuelle mais est prévue).
+                        </div>
+                    </div>
+                </div>
+
+                {# -- SECTION 4 — Sécurité & confidentialité -- #}
+                <h2 class="h4 mb-3 mt-5"><i class="bi bi-shield-lock me-2 text-primary"></i>Sécurité & Confidentialité</h2>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingNine">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+                           9. Mes informations sont-elles confidentielles ?
+                        </button>
+                    </h3>
+                    <div id="collapseNine" class="accordion-collapse collapse" aria-labelledby="headingNine" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Oui. Les échanges avec Bénédicte ne sont ni stockés à des fins commerciales, ni partagés. Vos données restent privées. Nous prenons la confidentialité de vos données très au sérieux.
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingTen">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTen" aria-expanded="false" aria-controls="collapseTen">
+                           10. Est-ce que je peux supprimer mes données ?
+                        </button>
+                    </h3>
+                    <div id="collapseTen" class="accordion-collapse collapse" aria-labelledby="headingTen" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Oui. Vous pouvez à tout moment supprimer vos scénarios ou votre compte depuis les paramètres de votre profil (fonctionnalité à implémenter), sans que rien ne soit conservé.
+                        </div>
+                    </div>
+                </div>
+
+                 {# -- SECTION 5 — Cas spécifiques -- #}
+                 <h2 class="h4 mb-3 mt-5"><i class="bi bi-puzzle me-2 text-primary"></i>Cas Spécifiques</h2>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingEleven">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEleven" aria-expanded="false" aria-controls="collapseEleven">
+                          11. Et si mon projet est atypique ?
+                        </button>
+                    </h3>
+                    <div id="collapseEleven" class="accordion-collapse collapse" aria-labelledby="headingEleven" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            C’est justement là que Bénédicte est utile. Que vous portiez un projet agricole, culturel, associatif ou tech, elle s’adapte pour analyser les spécificités de votre modèle.
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingTwelve">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwelve" aria-expanded="false" aria-controls="collapseTwelve">
+                           12. Puis-je l’utiliser dans un cadre non commercial ?
+                        </button>
+                    </h3>
+                    <div id="collapseTwelve" class="accordion-collapse collapse" aria-labelledby="headingTwelve" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                           Oui. Associations, collectivités, tiers-lieux… Toute structure avec des choix stratégiques à faire peut en tirer parti pour mieux évaluer l'impact de ses décisions.
+                        </div>
+                    </div>
+                </div>
+
+            </div> {# Fin Accordion #}
+        </div> {# Fin Col #}
+    </div> {# Fin Row #}
+</div> {# Fin Container #}
+{% endblock %}
