@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "company.apps.CompanyConfig",
     "analysis.apps.AnalysisConfig",
+    'content.apps.ContentConfig',
 ]
 
 MIDDLEWARE = [

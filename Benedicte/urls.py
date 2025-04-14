@@ -26,4 +26,5 @@ urlpatterns = [
         "", include("company.urls")
     ),  # Ou préfixez avec 'company/' si vous préférez: path('company/', include('company.urls')),
     path("", include("analysis.urls")),  # Ou préfixez avec 'analysis/'
+    path('', include('content.urls')), # Ajouter cette ligne
 ]

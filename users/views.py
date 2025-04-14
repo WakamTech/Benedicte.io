@@ -6,6 +6,9 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView, LogoutView
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger # Import Paginator classes
+from analysis.models import ScenarioRequest # Importer le modèle d'analyse
+
 # Vue pour l'inscription (utilise une vue basée sur classe générique)
 class RegisterView(CreateView):
     form_class = UserCreationForm
@@ -34,4 +37,31 @@ class CustomLogoutView(LogoutView):
 
 # Optionnel : Une vue simple pour la page d'accueil ou une page de test
 def home(request):
-    return render(request, 'home.html')
+    analysis_list = []
+    page_obj = None # Initialiser page_obj
+
+    if request.user.is_authenticated:
+        # Récupérer TOUTES les analyses de l'utilisateur, triées par date (plus récentes d'abord)
+        analysis_list = ScenarioRequest.objects.filter(user=request.user).order_by('-created_at')
+
+        # Mettre en place la pagination
+        paginator = Paginator(analysis_list, 10) # Afficher 10 analyses par page
+        page_number = request.GET.get('page') # Récupérer le numéro de page depuis l'URL (?page=X)
+
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            # Si page n'est pas un entier, afficher la première page.
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            # Si page est hors limites (ex. page 999), afficher la dernière page.
+            page_obj = paginator.page(paginator.num_pages)
+
+    # Le contexte inclut maintenant page_obj qui contient les analyses de la page courante
+    # et les informations pour la navigation de pagination.
+    context = {
+        'is_authenticated': request.user.is_authenticated, # Passer explicitement si besoin hors auth context processor
+        'username': request.user.username if request.user.is_authenticated else None,
+        'page_obj': page_obj, # Passer l'objet Page au template
+    }
+    return render(request, 'home.html', context)
