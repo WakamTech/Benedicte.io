@@ -1,0 +1,209 @@
+<!-- templates/analysis/request_scenario_guided.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9"> {# Largeur adaptée #}
+
+        {# Le formulaire englobe tout pour pouvoir soumettre différentes parties #}
+        <form method="post" novalidate id="request-scenario-form">
+            {% csrf_token %}
+
+            {# ------------------------------------------ #}
+            {# CARTE 1 : Sélection de l'Axe d'Analyse     #}
+            {# ------------------------------------------ #}
+            <div class="card shadow-sm border-light mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 card-title mb-0">
+                        <i class="bi bi-compass me-2"></i> 1. Choisissez votre Axe d'Analyse Principal
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                     {# Afficher les erreurs générales du formulaire d'axe #}
+                     {% if axis_selection_form.non_field_errors %}
+                        <div class="alert alert-danger d-flex align-items-center small p-2" role="alert">
+                           <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                           <div>{% for error in axis_selection_form.non_field_errors %}{{ error }}<br>{% endfor %}</div>
+                        </div>
+                     {% endif %}
+
+                     {# Champ 'request_type' du formulaire axis_selection_form #}
+                     {% with field=axis_selection_form.request_type %}
+                        <div class="mb-3">
+                            {# Le label vient du formulaire Django #}
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {# Le widget select est généré par Django ici #}
+                            {{ field }}
+                            {# Affichage des erreurs spécifiques à ce champ #}
+                            {% if field.errors %}
+                                <div class="invalid-feedback d-block"> {# d-block pour forcer l'affichage #}
+                                    {% for error in field.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            {# Affichage du texte d'aide #}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                            {% endif %}
+                        </div>
+                     {% endwith %}
+
+                     {# Bouton pour SOUMETTRE le choix de l'axe #}
+                     {# Ce bouton recharge la page pour afficher les questions ou la description #}
+                     <button type="submit" name="submit_axis" class="btn btn-secondary">
+                         Afficher les détails pour cet axe
+                     </button>
+                </div>
+            </div>
+
+            {# ----------------------------------------------- #}
+            {# CARTE 2 : Questions Guidées (si axe sélectionné) #}
+            {# ----------------------------------------------- #}
+            {# Utiliser la nouvelle variable de contexte #}
+            {% if selected_axis and selected_axis != 'other' and forms_with_questions %}
+            <div class="card shadow-sm border-light mb-4">
+                 <div class="card-header bg-info-subtle border-info-subtle">
+                     <h2 class="h4 card-title mb-0 text-info-emphasis">
+                        <i class="bi bi-patch-question me-2"></i> 2. Détaillez votre Projet (Axe : {{ selected_axis_label }})
+                    </h2>
+                 </div>
+                 <div class="card-body p-4">
+                    <p class="text-muted fst-italic">Répondez aux questions suivantes pour que l'analyse soit la plus pertinente possible.</p>
+
+                    {# Management form du formset - TOUJOURS NÉCESSAIRE #}
+                    {% if response_formset %}{{ response_formset.management_form }}{% endif %}
+
+
+                    {# Afficher les erreurs globales du formset #}
+                     {% if response_formset.non_form_errors %} {# On vérifie toujours sur le formset original #}
+                        <div class="alert alert-danger d-flex align-items-center small p-2" role="alert">
+                           <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                           <div>{% for error in response_formset.non_form_errors %}{{ error }}<br>{% endfor %}</div>
+                        </div>
+                    {% endif %}
+
+                    {# Boucle sur les paires (form, question) #}
+                    {% for item in forms_with_questions %}
+                        {% with form=item.form question=item.question %} {# Extraire form et question #}
+                        <div class="mb-3 p-3 rounded border {% if form.errors %}border-danger border-2{% else %}border-light-subtle{% endif %}">
+                            {# Champ caché pour l'ID de la question #}
+                            {{ form.question_id }}
+
+                             <label for="{{ form.answer_text.id_for_label }}" class="form-label fw-bold d-block mb-2">
+                                {{ forloop.counter }}. {{ question.question_text }}
+                                {% if question.is_required %}<span class="text-danger ms-1">*</span>{% endif %}
+                            </label>
+
+                            {# Champ de réponse #}
+                            {{ form.answer_text }}
+
+                             {% if form.answer_text.errors %}
+                                <div class="invalid-feedback d-block mt-1">
+                                    {% for error in form.answer_text.errors %}{{ error }}{% endfor %}
+                                </div>
+                             {% endif %}
+                             {% if question.placeholder_text %}
+                                 <div class="form-text text-muted mt-1"><small>{{ question.placeholder_text }}</small></div>
+                             {% endif %}
+                        </div>
+                        {% endwith %} {# Fin du with form=item.form question=item.question #}
+                    {% endfor %} {# Fin de la boucle sur forms_with_questions #}
+
+                    
+                     {# Champ de description libre (Optionnel, mais peut rester utile pour des détails non couverts) #}
+                     {% with field=axis_selection_form.user_description %}
+                        <div class="mb-3">
+                             <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                             {# Widget Textarea rendu par Django #}
+                             {{ field }}
+                             {% if field.errors %}
+                                 <div class="invalid-feedback d-block"> {# d-block pour forcer affichage #}
+                                     {% for error in field.errors %}{{ error }}{% endfor %}
+                                 </div>
+                             {% endif %}
+                             {% if field.help_text %}
+                                 <div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                             {% endif %}
+                        </div>
+                    {% endwith %}
+
+                    {# Bouton pour SOUMETTRE LES RÉPONSES et lancer l'analyse #}
+                    <div class="d-flex justify-content-between mt-4">
+                        {% if prev_step_url %}
+                           <a href="{{ prev_step_url }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Précédent (Étape 4)</a>
+                        {% else %}
+                           <span></span>
+                        {% endif %}
+                        <button type="submit" name="submit_responses" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i> Lancer l'analyse avec ces réponses
+                        </button>
+                    </div>
+
+                </div> {# Fin card-body questions #}
+            </div> {# Fin card questions #}
+
+            {# --------------------------------------------- #}
+            {# CARTE 3 : Cas 'Autre' (si axe sélectionné)    #}
+            {# --------------------------------------------- #}
+            {% elif selected_axis == 'other' %}
+             <div class="card shadow-sm border-light mb-4">
+                 <div class="card-header bg-light">
+                     <h2 class="h4 card-title mb-0">
+                        <i class="bi bi-pencil-square me-2"></i> 2. Décrivez votre Projet Spécifique
+                    </h2>
+                 </div>
+                 <div class="card-body p-4">
+                                           {% with field=axis_selection_form.user_description %}
+                        <div class="mb-3">
+                             <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }} <span class="text-danger">*</span></label>
+                             {# Générer le textarea manuellement pour ajouter required #}
+                             <textarea name="{{ field.html_name }}"
+                                       id="{{ field.id_for_label }}"
+                                       class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                       rows="6" {# Hauteur souhaitée #}
+                                       placeholder="{{ field.field.widget.attrs.placeholder|default:field.label }}"
+                                       required> {# Attribut required ajouté directement #}
+                                 {{ field.value|default:'' }}
+                             </textarea>
+                             {% if field.errors %}
+                                 <div class="invalid-feedback d-block">
+                                     {% for error in field.errors %}{{ error }}{% endfor %}
+                                 </div>
+                             {% endif %}
+                             {% if field.help_text %}
+                                 <div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>
+                             {% endif %}
+                        </div>
+                     {% endwith %}
+
+                       {# Bouton pour SOUMETTRE LA DESCRIPTION 'Autre' #}
+                       <div class="d-flex justify-content-between mt-4">
+                           {% if prev_step_url %}
+                               <a href="{{ prev_step_url }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Précédent (Étape 4)</a>
+                           {% else %}
+                              <span></span>
+                           {% endif %}
+                           <button type="submit" name="submit_other_description" class="btn btn-primary">
+                               <i class="bi bi-play-circle me-1"></i> Lancer l'analyse
+                           </button>
+                       </div>
+                 </div>
+             </div>
+            {% endif %} {# Fin de la condition sur selected_axis #}
+
+        </form> {# Fin du formulaire global #}
+
+    </div> {# Fin col #}
+</div> {# Fin row #}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+{# Aucun JS complexe nécessaire pour cette version SSR, mais on pourrait en ajouter #}
+{# pour améliorer l'UX (ex: adapter le type d'input dynamiquement) #}
+{% endblock %}
