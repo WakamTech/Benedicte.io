@@ -1,0 +1,244 @@
+<!-- templates/company/onboarding_formset_step.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9"> {# Encore plus large pour potentiellement plusieurs formulaires #}
+
+        <form method="post" novalidate id="main-formset">
+            {% csrf_token %}
+            {# IMPORTANT: Management form pour la gestion du formset par Django #}
+            {{ formset.management_form }}
+
+            <div class="card shadow-sm border-light mb-4">
+                 <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap"> {# flex-wrap pour mobile #}
+                    <h2 class="h4 card-title mb-0 me-2">{{ step_title }}</h2>
+                    {# Bouton pour ajouter un formulaire (via JS) #}
+                    <button type="button" class="btn btn-sm btn-outline-success mt-2 mt-md-0" id="add-form"> {# Marge mobile #}
+                        <i class="bi bi-plus-lg me-1"></i> Ajouter un élément
+                    </button>
+                </div>
+
+                <div class="card-body p-4">
+                    {# Affichage des erreurs générales du formset #}
+                    {% if formset.non_form_errors %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                           <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                           <div>
+                                {% for error in formset.non_form_errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {# Conteneur pour les formulaires du formset #}
+                    <div id="formset-container">
+                        {% for form in formset %}
+                            {# Utiliser une carte pour chaque formulaire imbriqué #}
+                            <div class="card mb-3 formset-form {% if form.errors %}border-danger{% endif %}">
+                                {# Hidden ID field pour les items existants #}
+                                {{ form.id }}
+
+                                <div class="card-body p-3"> {# Padding réduit dans les cartes internes #}
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-subtitle mb-0 text-muted small fw-bold"> {# Ajustement style titre #}
+                                            {% if form.instance.pk %}
+                                                {# Optionnel: Masquer "Élément existant" si redondant #}
+                                            {% else %}
+                                                {# Optionnel: Masquer "Nouvel élément" si redondant #}
+                                            {% endif %}
+                                             {# Afficher le nom si déjà existant pour référence #}
+                                             {% if form.instance.pk and form.instance.name %}
+                                                "{{ form.instance.name|truncatechars:30 }}"
+                                             {% elif not form.instance.pk %}
+                                                Nouvel élément #{{ forloop.counter }}
+                                             {% else %}
+                                                Élément #{{ forloop.counter }}
+                                             {% endif %}
+                                        </h5>
+                                        {# Bouton de suppression #}
+                                        {% if formset.can_delete and form.instance.pk %}
+                                            <div class="form-check ms-2"> {# Marge réduite #}
+                                                {{ form.DELETE }}
+                                                <label class="form-check-label btn btn-sm btn-outline-danger delete-button p-1 lh-1" {# Padding réduit, hauteur ligne #}
+                                                       for="{{ form.DELETE.id_for_label }}"
+                                                       data-bs-toggle="tooltip" title="Marquer pour suppression">
+                                                       <i class="bi bi-trash fs-6"></i> {# Taille icone ajustée #}
+                                                </label>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {# Affichage des erreurs spécifiques à ce formulaire imbriqué #}
+                                     {% if form.errors %}
+                                        <div class="alert alert-warning alert-dismissible fade show small p-2 mb-2" role="alert">
+                                            <i class="bi bi-exclamation-circle me-1"></i> Veuillez corriger les erreurs pour cet élément.
+                                            <button type="button" class="btn-close p-1" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                     {% endif %}
+
+                                    {# Itération sur les champs de ce formulaire imbriqué #}
+                                    <div class="row g-2"> {# g-2 pour espacement réduit #}
+                                        {# NOM et CONTRIBUTION CA - Côte à côte #}
+                                        {% for field in form %}
+                                            {% if field.name == 'name' or field.name == 'revenue_contribution' %}
+                                                <div class="col-md-6 mb-2"> {# Moitié largeur #}
+                                                    <label for="{{ field.id_for_label }}" class="form-label form-label-sm">
+                                                        {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                                    </label>
+                                                    <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control form-control-sm {% if field.errors %}is-invalid{% endif %}" placeholder="{{ field.label }}" {% if field.field.required %}required{% endif %} value="{{ field.value|default:'' }}">
+                                                    {% if field.errors %}<div class="invalid-feedback">{% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                                                    {% if field.help_text %}<div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>{% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {# DESCRIPTION - Pleine largeur en dessous #}
+                                        {% for field in form %}
+                                            {% if field.name == 'description' %}
+                                                <div class="col-12 mb-2"> {# Pleine largeur #}
+                                                   <label for="{{ field.id_for_label }}" class="form-label form-label-sm">
+                                                       {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                                   </label>
+                                                   <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control form-control-sm {% if field.errors %}is-invalid{% endif %}" rows="2" placeholder="{{ field.label|default:'Décrivez brièvement...' }}">{{ field.value|default:'' }}</textarea> {# Widget défini dans forms.py utilisé ici #}
+                                                   {% if field.errors %}<div class="invalid-feedback">{% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                                                   {% if field.help_text %}<div class="form-text text-muted"><small>{{ field.help_text|safe }}</small></div>{% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div> {# Fin row g-2 #}
+                                </div> {# Fin card-body #}
+                            </div> {# Fin card formset-form #}
+                        {% endfor %}
+                    </div> {# Fin formset-container #}
+
+                     {# Template pour les nouveaux formulaires ajoutés par JS (caché initialement) #}
+                    <div id="empty-form" class="card mb-3 formset-form" style="display: none;">
+                         <div class="card-body p-3">
+                             <h5 class="card-subtitle mb-2 text-muted small fw-bold">Nouvel élément</h5>
+                             <div class="row g-2">
+                                 {# Les champs clonés seront insérés ici par JS #}
+                             </div>
+                         </div>
+                    </div>
+
+                    {# Boutons de navigation #}
+                    <div class="d-flex justify-content-between mt-4">
+                         {% if prev_step_url %}
+                            <a href="{{ prev_step_url }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Précédent</a>
+                         {% else %}
+                            <span></span> {# Placeholder pour maintenir l'alignement #}
+                         {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                           Suivant <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div> {# Fin card-body principale #}
+            </div> {# Fin card globale #}
+        </form>
+    </div> {# Fin col #}
+</div> {# Fin row #}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formsetContainer = document.getElementById('formset-container');
+    const addButton = document.getElementById('add-form');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+
+    if (!totalFormsInput) {
+        console.error("Management form input 'TOTAL_FORMS' not found!");
+        return;
+    }
+
+    let formNum = parseInt(totalFormsInput.value);
+
+    if (addButton) {
+        addButton.addEventListener('click', function() {
+            const lastForm = formsetContainer.querySelector('.formset-form:last-of-type');
+            const templateForm = document.getElementById('empty-form'); // Utiliser le template si pas de formulaire initial
+
+            let formToClone = lastForm;
+             // Si aucun formulaire n'est affiché (extra=0 et pas de données), essayer de cloner le template vide
+            if (!formToClone && templateForm) {
+                 // Important: Assurez-vous que #empty-form contient la structure HTML complète d'un formulaire
+                 // avec les champs utilisant __prefix__ comme placeholder pour l'index.
+                 // Si ce n'est pas le cas, cette partie échouera ou nécessitera plus de JS.
+                 // Pour ce code, on suppose que lastForm existe (extra >= 1 ou données initiales)
+                 console.warn("Aucun formulaire à cloner, vérifiez 'extra' ou le contenu de #empty-form.");
+                 // Pour l'instant, on ne fait rien si lastForm n'existe pas.
+                 return;
+            }
+             // S'il n'y a ni lastForm ni templateForm, on ne peut rien faire
+            if (!formToClone) return;
+
+
+            const newForm = formToClone.cloneNode(true);
+            newForm.removeAttribute('id'); // Enlever l'id du template vide s'il était cloné
+            newForm.style.display = ''; // Assurer qu'il est visible
+
+            // Nettoyer et Mettre à Jour les Champs
+            newForm.classList.remove('border-danger');
+            newForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            newForm.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+            newForm.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.type !== 'hidden' && input.type !== 'button' && input.type !== 'submit' && !input.name.endsWith('-DELETE')) {
+                   if (input.type === 'checkbox' || input.type === 'radio') { input.checked = false; }
+                   else if (input.tagName === 'SELECT') { input.selectedIndex = 0; }
+                   else { input.value = ''; }
+                }
+                const name = input.getAttribute('name');
+                const id = input.getAttribute('id');
+                const regex = /-(\d+)-|__prefix__/; // Inclure __prefix__ si on clone le template
+                if (name) { input.setAttribute('name', name.replace(regex, `-${formNum}-`)); }
+                if (id) { input.setAttribute('id', id.replace(regex, `-${formNum}-`)); }
+                if (input.name.endsWith('-DELETE')) { input.checked = false; }
+            });
+            newForm.querySelectorAll('label').forEach(label => {
+                 const htmlFor = label.getAttribute('for');
+                 const regex = /-(\d+)-|__prefix__/;
+                 if (htmlFor) { label.setAttribute('for', htmlFor.replace(regex, `-${formNum}-`)); }
+             });
+
+            // Mettre à jour le titre et supprimer le bouton delete
+            const title = newForm.querySelector('.card-subtitle');
+            if(title) title.textContent = `Nouvel élément #${formNum + 1}`;
+            const deleteContainer = newForm.querySelector('.form-check');
+            if (deleteContainer && deleteContainer.querySelector('input[name$="-DELETE"]')) {
+                 deleteContainer.remove();
+            }
+             // Vider l'ID caché s'il est présent (pour que Django sache que c'est une NOUVELLE instance)
+             const idInput = newForm.querySelector('input[type="hidden"][name$="-id"]');
+             if (idInput) {
+                 idInput.value = '';
+             }
+
+
+            formsetContainer.appendChild(newForm);
+            totalFormsInput.value = formNum + 1;
+            formNum++;
+            initializeTooltips(newForm);
+        });
+    }
+
+    // Fonction initializeTooltips (inchangée)
+    function initializeTooltips(container = document) { /* ... code identique ... */ }
+
+    // Gestion visuelle de la suppression (inchangée)
+    formsetContainer.addEventListener('change', function(event) { /* ... code identique ... */ });
+
+     // Appliquer style initial (inchangée)
+     document.querySelectorAll('input[type="checkbox"][name$="-DELETE"]:checked').forEach(checkbox => { /* ... code identique ... */ });
+
+     // Initialiser les tooltips au chargement (inchangée)
+     initializeTooltips(formsetContainer);
+
+});
+</script>
+{% endblock %}

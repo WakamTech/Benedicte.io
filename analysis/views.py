@@ -12,6 +12,7 @@ from .services import perform_analysis  # Importez le service
 import logging  # Importer logging
 from .models import ScenarioRequest, ScenarioResult # Assurez-vous que ScenarioResult est importé
 import json
+from django.contrib import messages # Importer le framework de messages Django
 from datetime import datetime # Importez la CLASSE datetime depuis le MODULE datetime
 from django.http import HttpResponse, Http404 # Importer HttpResponse, Http404
 from .report_utils import generate_pdf_report, generate_excel_report # Importer les nouvelles fonctions
@@ -23,10 +24,34 @@ logger = logging.getLogger(__name__)  # Initialiser logger pour les vues
 def request_scenario_view(request):
     try:
         company_profile = request.user.company_profile
+        # --- VÉRIFICATION DES DONNÉES (Point H) ---
+        # Vérifier si des données minimales existent. Adaptez selon vos critères.
+        # Exemple: au moins une donnée financière ET une charge ?
+        has_financials = company_profile.financial_data.exists()
+        has_charges = company_profile.charges.exists()
+        has_products = company_profile.products_services.exists()
+
+        # Définir ici les conditions minimales requises
+        is_data_sufficient = has_financials and has_charges and has_products # Exemple simple
+
+        if not is_data_sufficient:
+            logger.warning(f"Utilisateur {request.user.id} a tenté une analyse sans données suffisantes.")
+            # Afficher un message d'erreur à l'utilisateur
+            messages.error(request, "Benedicte ne peut pas vous fournir d'analyse prospective sans aucune donnée d'entreprise (CA, Charges, Produits). Veuillez compléter les étapes précédentes.")
+            # Rediriger vers la première étape manquante (logique à affiner)
+            if not has_financials:
+                 return redirect('company_financials_step')
+            elif not has_charges:
+                 return redirect('company_charges_step')
+            else: # Manque produits
+                 return redirect('company_products_step')
+        # --- Fin Vérification ---
+
     except CompanyProfile.DoesNotExist:
         logger.warning(
             f"Utilisateur {request.user.id} a tenté d'accéder à la demande de scénario sans profil."
         )
+        messages.warning(request, "Veuillez d'abord renseigner les informations de votre entreprise.")
         return redirect("company_profile_step")
 
     if request.method == "POST":
@@ -70,7 +95,7 @@ def request_scenario_view(request):
     else:
         form = ScenarioRequestForm()
 
-    context = {"form": form, "step_title": "Étape 5: Quel est votre projet ?"}
+    context = {"form": form, "step_title": "Étape 5/5 : Quel est votre projet ?", 'prev_step_url': reverse('company_products_step'),}
     return render(request, "analysis/request_scenario.html", context)
 
 

@@ -27,7 +27,7 @@ def company_profile_step(request):
     else:
         form = CompanyProfileForm(instance=profile)
 
-    context = {'form': form, 'step_title': "Étape 1: Informations sur l'entreprise"}
+    context = {'form': form, 'step_title': "Étape 1/5 : Informations sur l'entreprise", 'next_step_url': reverse('company_financials_step')}
     return render(request, 'company/onboarding_step.html', context)
 
 @login_required
@@ -42,7 +42,7 @@ def company_financials_step(request):
     else:
         formset = FinancialDataFormSet(instance=profile)
 
-    context = {'formset': formset, 'step_title': "Étape 2: Données Financières (CA Annuel)"}
+    context = {'formset': formset, 'step_title': "Étape 2/5 : Données Financières (CA Annuel)",'prev_step_url': reverse('company_profile_step'), 'next_step_url': reverse('company_charges_step')}
     return render(request, 'company/onboarding_formset_step.html', context)
 
 @login_required
@@ -57,7 +57,7 @@ def company_charges_step(request):
     else:
         formset = ChargeFormSet(instance=profile)
 
-    context = {'formset': formset, 'step_title': "Étape 3: Charges Fixes et Variables"}
+    context = {'formset': formset, 'step_title': "Étape 3/5 : Charges Fixes et Variables",'prev_step_url': reverse('company_financials_step'), 'next_step_url': reverse('company_products_step')}
     return render(request, 'company/onboarding_formset_step.html', context)
 
 @login_required
@@ -74,5 +74,5 @@ def company_products_step(request):
     else:
         formset = ProductServiceFormSet(instance=profile)
 
-    context = {'formset': formset, 'step_title': "Étape 4: Produits / Services Principaux"}
+    context = {'formset': formset, 'step_title': "Étape 4/5 : Produits / Services Principaux", 'prev_step_url': reverse('company_charges_step'), 'next_step_url': reverse('request_scenario')}
     return render(request, 'company/onboarding_formset_step.html', context)

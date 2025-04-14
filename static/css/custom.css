@@ -24,3 +24,13 @@
   /* .navbar-dark .navbar-toggler { border-color: rgba(255, 255, 255, 0.1); } */
   
   /* Vous pouvez ajouter d'autres surcharges ici */
+
+/* static/css/custom.css */
+.form-question-block {
+  background-color: #f8f9fa; /* Ou une autre couleur grise légère */
+  border: 1px solid #dee2e6;
+}
+.form-question-block label {
+  /* Styles spécifiques pour le label si besoin */
+  color: #495057;
+}

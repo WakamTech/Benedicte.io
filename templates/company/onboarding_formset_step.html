@@ -54,7 +54,7 @@
                                         </h5> -->
                                         {# Bouton de suppression pour les formulaires qui peuvent être supprimés #}
                                         {% if formset.can_delete and form.instance.pk %} {# Afficher seulement pour les existants #}
-                                            <div class="form-check ms-3">
+                                            <div class="form-check ms-2">
                                                 {{ form.DELETE }} {# La checkbox cachée gère la logique #}
                                                 <label class="form-check-label btn btn-sm btn-outline-danger delete-button"
                                                        for="{{ form.DELETE.id_for_label }}"
@@ -127,20 +127,15 @@
 
                     {# Boutons de navigation #}
                     <div class="d-flex justify-content-between mt-4"> {# Boutons aux extrémités #}
-                         {# Mettre ici la logique pour afficher "Précédent" depuis la vue #}
-                         {% comment %}
-                         Exemple: Il faut passer l'URL précédente depuis la vue Django dans le contexte
-                         {% if prev_step_url %}
-                            <a href="{{ prev_step_url }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Précédent</a>
-                         {% else %}
-                            <span></span> {# Placeholder pour maintenir l'alignement #}
-                         {% endif %}
-                         {% endcomment %}
-                         <a href="#" class="btn btn-outline-secondary disabled">Précédent (à lier)</a> {# Placeholder Temporaire #}
+                        {% if prev_step_url %} {# Vérifie si l'URL est passée #}
+                        <a href="{{ prev_step_url }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Précédent</a>
+                     {% else %}
+                        <span></span> {# Placeholder si pas d'URL précédente #}
+                     {% endif %}
 
-                        <button type="submit" class="btn btn-primary">
-                           Suivant <i class="bi bi-arrow-right ms-1"></i>
-                        </button>
+                    <button type="submit" class="btn btn-primary">
+                       Suivant <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
                     </div>
                 </div> {# Fin card-body principale #}
             </div> {# Fin card globale #}

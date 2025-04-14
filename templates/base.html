@@ -26,9 +26,7 @@
             {# Ou navbar-light bg-light si préféré #}
             <div class="container">
                 <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-                    
                     <i class="bi bi-graph-up"></i>
-                    
                     Benedicte.io {# Nom du projet mis à jour #}
                 </a>
                 <button
@@ -72,12 +70,14 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <a class="dropdown-item" href="{% url 'home' %}">
-                                        <i class="bi bi-layout-text-sidebar-reverse me-2"></i>Mes Analyses
+                                        <i class="bi bi-layout-text-sidebar-reverse me-2"></i>
+                                        Mes Analyses
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'company_profile_step' %}">
-                                        <i class="bi bi-building me-2"></i>Profil Entreprise
+                                        <i class="bi bi-building me-2"></i>
+                                        Profil Entreprise
                                     </a>
                                 </li>
                                 <li>
@@ -87,7 +87,8 @@
                                     <form method="post" action="{% url 'logout' %}" style="display: inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="dropdown-item">
-                                            <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                                            <i class="bi bi-box-arrow-right me-2"></i>
+                                            Déconnexion
                                         </button>
                                     </form>
                                 </li>
@@ -95,7 +96,8 @@
                         </li>
                         <li class="nav-item">
                             <a class="btn btn-primary ms-lg-2" href="{% url 'request_scenario' %}">
-                                <i class="bi bi-plus-circle me-1"></i> Nouvelle Analyse
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Nouvelle Analyse
                             </a>
                         </li>
                         {% else %}
@@ -112,6 +114,22 @@
             </div>
         </nav>
         <!-- Contenu Principal -->
+        <div class="container mt-3">
+            {# Conteneur optionnel pour les messages #}
+            {% if messages %}
+                {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                ></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
         <div class="container">
             {% block content %}
             <!-- Le contenu spécifique de chaque page vient ici -->
