@@ -1,0 +1,59 @@
+<!-- templates/content/legal_notice.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ step_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+     <div class="legal-page-content">
+
+        <h1 class="mb-3"><i class="bi bi-file-earmark-text me-2"></i>Mentions légales – Bénédicte.io</h1>
+        <p class="text-muted">Dernière mise à jour : 14/04/2025</p> {# Utiliser date du document #}
+        <hr class="mb-4">
+
+        <p>Conformément aux dispositions des articles 6-III et 19 de la Loi n°2004-575 du 21 juin 2004 pour la Confiance dans l'économie numérique, il est précisé aux utilisateurs du site Bénédicte.io l'identité des différents intervenants dans le cadre de sa réalisation et de son suivi.</p>
+
+        <h2 class="h4 mt-4 mb-3">1. Éditeur du site</h2>
+        <p>
+            Raison sociale: AGRI360<br>
+            Forme juridique : EI<br> {# EI pour Entreprise Individuelle ? A confirmer #}
+            Siège social: 29 rue Tronchet, 75008 Paris<br>
+            Numéro SIREN / SIRET: 81352261200023<br>
+            RCS : Saint Etienne<br>
+            Numéro de TVA intracommunautaire: FR27813522612<br>
+            Responsable de la publication : BENNANI Hichem<br>
+            Email de contact: <a href="mailto:contact@benedicte.io">contact@benedicte.io</a>
+        </p>
+
+        <h2 class="h4 mt-4 mb-3">2. Hébergeur</h2>
+        <p>Nom de l'hébergeur : LWS</p>
+        {# Il manque les coordonnées complètes de LWS ici, c'est obligatoire #}
+        <p class="text-danger"><small>Note: Les coordonnées complètes (adresse, téléphone) de l'hébergeur LWS doivent être ajoutées ici pour être conformes.</small></p>
+
+        <h2 class="h4 mt-4 mb-3">3. Conception et développement</h2>
+        <p>Nom ou agence (si différente de l'éditeur) : AGRI360</p>
+
+        <h2 class="h4 mt-4 mb-3">4. Activité</h2>
+        <p>Bénédicte.io est un service en ligne (SaaS) proposant des outils d'analyse prospective automatisée par intelligence artificielle, à destination des professionnels et porteurs de projets.</p>
+        <p>Les informations fournies ne constituent ni un conseil juridique, ni un conseil fiscal, ni une recommandation personnalisée réglementée.</p>
+
+        <h2 class="h4 mt-4 mb-3">5. Propriété intellectuelle</h2>
+        <p>L'ensemble du contenu du site (textes, images, illustrations, logo, nom, interface, base de données, etc.) est la propriété exclusive de l'éditeur, sauf mention contraire.</p>
+        <p>Toute reproduction, représentation, diffusion ou exploitation, même partielle, sans autorisation expresse est interdite.</p>
+
+        <h2 class="h4 mt-4 mb-3">6. Données personnelles</h2>
+        <p>Les informations relatives à la collecte et au traitement des données personnelles sont accessibles dans la <a href="{% url 'privacy_policy' %}">Politique de confidentialité</a>.</p>
+
+        <h2 class="h4 mt-4 mb-3">7. Cookies</h2>
+        <p>Le site peut utiliser des cookies ou traceurs à des fins de fonctionnement, de mesure d'audience ou d'amélioration de l'expérience utilisateur. Un bandeau d'information permet à l'utilisateur de gérer ses préférences.</p>
+
+        <h2 class="h4 mt-4 mb-3">8. Responsabilité</h2>
+        <p>L'éditeur ne saurait être tenu responsable des dommages directs ou indirects pouvant résulter de l'accès ou de l'utilisation du site et de ses services, y compris l'indisponibilité temporaire.</p>
+
+        <h2 class="h4 mt-4 mb-3">9. Contact</h2>
+        <p>Pour toute question, vous pouvez nous contacter à : <a href="mailto:contact@benedicte.io">contact@benedicte.io</a></p>
+
+    </div> {# Fin legal-page-content #}
+</div> {# Fin Container #}
+{% endblock %}

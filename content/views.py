@@ -28,3 +28,7 @@ def pricing_view(request):
     # Passer aussi la clé publiable si on utilise Stripe Elements ici
     # context['stripe_publishable_key'] = settings.STRIPE_PUBLISHABLE_KEY
     return render(request, 'content/pricing.html', context)
+
+def legal_notice_view(request):
+    context = {'step_title': "Mentions Légales"}
+    return render(request, 'content/legal_notice.html', context)

@@ -1,21 +1,74 @@
 <!-- templates/content/terms_conditions.html -->
 {% extends 'base.html' %}
-{% block title %}{{ step_title }}{% endblock %}
+{% load static %}
+
+{% block title %}Conditions Générales de Vente – Bénédicte.io{% endblock %} {# Titre plus spécifique #}
+
 {% block content %}
-<div class="container mt-4">
-    <h1><i class="bi bi-file-text me-2"></i>{{ step_title }}</h1>
-    <p class="text-muted">Dernière mise à jour : [Date de mise à jour]</p>
-    <hr>
-    <p><em>Contenu des CGV/CGU à fournir par le client.</em></p>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
-     <h2>Article 1 : Objet</h2>
-    <p>...</p>
-     <h2>Article 2 : Accès au service</h2>
-    <p>...</p>
-     <h2>Article 3 : Tarifs et Paiement</h2>
-    <p>...</p>
-     <h2>Article 4 : Obligations de l'utilisateur</h2>
-    <p>...</p>
-    {# Ajouter toutes les sections nécessaires #}
-</div>
+<div class="container mt-4 mb-5">
+    <div class="legal-page-content"> {# Utiliser la même classe pour style cohérent #}
+
+        <h1 class="mb-3"><i class="bi bi-file-text me-2"></i>Conditions Générales de Vente – Bénédicte.io</h1>
+        <p class="text-muted">Dernière mise à jour : 14/04/2025</p> {# Utiliser date du document #}
+        <hr class="mb-4">
+
+        <p>Les présentes Conditions Générales de Vente (CGV) régissent l'accès et l'utilisation du service Bénédicte.io, édité par AGRI360, ci-après désigné « l'Éditeur », par tout utilisateur professionnel, ci-après désigné « le Client ».</p>
+
+        <h2 class="h4 mt-4 mb-3">1. Objet</h2>
+        <p>Bénédicte.io est une plateforme SaaS d'assistance stratégique par intelligence artificielle, permettant au Client d'explorer des scénarios de développement, d'obtenir des analyses prospectives automatisées, et d'aider à la prise de décision.</p>
+
+        <h2 class="h4 mt-4 mb-3">2. Acceptation des CGV</h2>
+        <p>L'accès au service est conditionné à l'acceptation sans réserve des présentes CGV. En s'inscrivant ou en utilisant la plateforme, le Client déclare les avoir lues et acceptées.</p>
+
+        <h2 class="h4 mt-4 mb-3">3. Accès au service</h2>
+        <p>Le service est accessible 24h/24 et 7j/7, sauf maintenance ou interruption indépendante de la volonté de l'Éditeur.</p>
+        <p>L'Éditeur met tout en œuvre pour assurer un accès continu, mais ne peut être tenu responsable d'éventuelles indisponibilités temporaires.</p>
+
+        <h2 class="h4 mt-4 mb-3">4. Description des prestations</h2>
+        <p>Selon la formule souscrite, le Client peut :</p>
+        <ul class="list-unstyled ms-3">
+             <li><i class="bi bi-check text-primary me-2"></i>Créer et gérer des projets de simulation stratégique</li>
+             <li><i class="bi bi-check text-primary me-2"></i>Générer des scénarios et analyses basés sur ses données d'entrée</li>
+             <li><i class="bi bi-check text-primary me-2"></i>Accéder à des recommandations générées par un modèle d'IA tiers (OpenAI, ou autre)</li>
+        </ul>
+        <p class="fw-bold">Les résultats sont générés automatiquement par algorithmes et ne constituent ni un conseil juridique, ni un conseil financier, ni un conseil personnalisé au sens réglementaire.</p>
+
+        <h2 class="h4 mt-4 mb-3">5. Tarifs et facturation</h2>
+        <p>Les tarifs sont disponibles sur le site au moment de la souscription. Ils peuvent être exprimés en HT ou TTC selon le pays.</p>
+        <p>Le paiement s'effectue via un prestataire sécurisé (ex.: Stripe). Le service est accessible immédiatement après confirmation du paiement.</p>
+        <p>L'abonnement est mensuel ou annuel, selon la formule choisie. Il est renouvelé automatiquement sauf résiliation par le Client avant la date d'échéance.</p>
+
+        <h2 class="h4 mt-4 mb-3">6. Rétractation</h2>
+        <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas une fois l'accès au service numérique fourni.</p>
+        <p>Aucun remboursement ne pourra être exigé pour un abonnement déjà entamé.</p>
+
+        <h2 class="h4 mt-4 mb-3">7. Obligations du Client</h2>
+        <p>Le Client s'engage à :</p>
+         <ul class="list-unstyled ms-3">
+            <li><i class="bi bi-arrow-right-short me-1"></i>Utiliser la plateforme de manière loyale, sans détourner le service de son usage prévu</li>
+            <li><i class="bi bi-arrow-right-short me-1"></i>Ne pas insérer de données confidentielles, sensibles ou à caractère personnel non nécessaire</li>
+            <li><i class="bi bi-arrow-right-short me-1"></i>Fournir des informations exactes lors de la création de son compte</li>
+        </ul>
+
+        <h2 class="h4 mt-4 mb-3">8. Limitation de responsabilité</h2>
+        <p>L'Éditeur s'efforce de fournir un service pertinent, mais ne garantit pas l'exactitude, l'exhaustivité ou la pertinence des recommandations générées.</p>
+        <p>Le Client reste seul responsable de ses décisions stratégiques.</p>
+        <p>L'Éditeur ne pourra être tenu responsable d'un éventuel préjudice direct ou indirect lié à l'utilisation du service.</p>
+
+        <h2 class="h4 mt-4 mb-3">9. Propriété intellectuelle</h2>
+        <p>Le service, sa structure, son nom, son logo, ses contenus et son interface sont protégés par le droit d'auteur et la propriété industrielle.</p>
+        <p>Le Client bénéficie d'un droit d'usage personnel et non exclusif, limité à la durée de son abonnement.</p>
+
+        <h2 class="h4 mt-4 mb-3">10. Données personnelles</h2>
+        <p>Les traitements de données sont décrits dans la <a href="{% url 'privacy_policy' %}">Politique de confidentialité</a> accessible sur le site. Le Client dispose de droits d'accès, de rectification, d'opposition et de suppression selon le RGPD.</p>
+
+        <h2 class="h4 mt-4 mb-3">11. Résiliation</h2>
+        <p>Le Client peut résilier son abonnement à tout moment depuis son espace personnel <a href="{% url 'stripe_billing_portal' %}" target="_blank">(via notre partenaire Stripe)</a>. L'accès au service reste actif jusqu'à la fin de la période payée.</p> {# Lien vers portail Stripe #}
+        <p>L'Éditeur se réserve le droit de suspendre ou résilier un compte en cas de non-respect des CGV ou d'utilisation abusive.</p>
+
+        <h2 class="h4 mt-4 mb-3">12. Loi applicable et juridiction</h2>
+        <p>Les présentes CGV sont soumises au droit français. En cas de litige, compétence est attribuée au tribunal compétent du ressort du siège de l'Éditeur, sauf disposition légale impérative contraire.</p>
+
+    </div> {# Fin legal-page-content #}
+</div> {# Fin Container #}
 {% endblock %}
