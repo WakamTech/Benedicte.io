@@ -1,21 +1,97 @@
 <!-- templates/content/privacy_policy.html -->
 {% extends 'base.html' %}
+{% load static %} {# Charger static si vous utilisez des icônes ou CSS spécifiques #}
+
 {% block title %}{{ step_title }}{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h1><i class="bi bi-shield-check me-2"></i>{{ step_title }}</h1>
-    <p class="text-muted">Dernière mise à jour : [Date de mise à jour]</p>
-    <hr>
-    <p><em>Contenu de la politique de confidentialité à fournir par le client.</em></p>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
-    <h2>1. Collecte des Données</h2>
-    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-    <h2>2. Utilisation des Données</h2>
-    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam...</p>
-    <h2>3. Sécurité des Données</h2>
-    <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...</p>
-    <h2>4. Vos Droits</h2>
-    <p>...</p>
-    {# Ajouter toutes les sections nécessaires #}
-</div>
+<div class="container mt-4 mb-5"> {# Ajouter mb-5 pour l'espacement en bas #}
+    {# Utiliser une classe pour potentiellement styler spécifiquement les pages légales #}
+    <div class="legal-page-content">
+
+        <h1 class="mb-3"><i class="bi bi-shield-check me-2"></i>Politique de confidentialité – Bénédicte.io</h1>
+        <p class="text-muted">Dernière mise à jour : 14/04/2025</p> {# Garder la date du document client #}
+        <hr class="mb-4">
+
+        <p>Chez Bénédicte.io, la confidentialité et la sécurité de vos données sont une priorité. Cette politique de confidentialité décrit les types d'informations que nous collectons, comment nous les utilisons, et les mesures que nous prenons pour les protéger.</p>
+
+        <h2 class="h4 mt-4 mb-3">1. Responsable du traitement</h2>
+        <p>La plateforme Bénédicte.io est éditée par :<br>
+        AGRI360<br>
+        Adresse: 29 rue Tronchet 75008 Paris<br>
+        SIRET: 81352261200023<br>
+        Email: contact@benedicte.io</p> {# Utiliser <br> pour les retours ligne de l'adresse #}
+
+        <h2 class="h4 mt-4 mb-3">2. Données collectées</h2>
+        <p>Nous collectons uniquement les données nécessaires à l'utilisation et à l'amélioration du service :</p>
+        <h3 class="h5 mt-3">a. Données saisies par l'utilisateur</h3>
+        <ul class="list-unstyled ms-3"> {# Liste sans puces, avec marge #}
+            <li><i class="bi bi-caret-right-fill text-primary me-2"></i>Nom, email (le cas échéant)</li>
+            <li><i class="bi bi-caret-right-fill text-primary me-2"></i>Informations saisies lors de la création d'un projet ou d'une simulation (données d'entreprise, réponses aux questions guidées...)</li>
+            <li><i class="bi bi-caret-right-fill text-primary me-2"></i>Questions ou textes envoyés à l'IA via la plateforme (description libre pour l'axe 'Autre')</li>
+        </ul>
+        <h3 class="h5 mt-3">b. Données techniques</h3>
+         <ul class="list-unstyled ms-3">
+            <li><i class="bi bi-caret-right-fill text-secondary me-2"></i>Adresse IP</li>
+            <li><i class="bi bi-caret-right-fill text-secondary me-2"></i>Type de navigateur, langue, fuseau horaire</li>
+            <li><i class="bi bi-caret-right-fill text-secondary me-2"></i>Données de navigation sur le site (pages visitées, durée...) collectées de manière anonyme via notre outil d'analyse respectueux de la vie privée.</li>
+        </ul>
+
+        <h2 class="h4 mt-4 mb-3">3. Finalités du traitement</h2>
+        <p>Vos données sont utilisées uniquement pour :</p>
+         <ul class="list-unstyled ms-3">
+            <li><i class="bi bi-check text-success me-2"></i>Fournir les services proposés par Bénédicte.io</li>
+            <li><i class="bi bi-check text-success me-2"></i>Générer des analyses automatisées à partir de vos saisies</li>
+            <li><i class="bi bi-check text-success me-2"></i>Améliorer la qualité et la pertinence des réponses de l'IA</li>
+            <li><i class="bi bi-check text-success me-2"></i>Garantir la sécurité et le bon fonctionnement de la plateforme</li>
+            <li><i class="bi bi-check text-success me-2"></i>Vous informer d'éventuelles mises à jour ou nouveautés (si vous l'avez accepté)</li>
+        </ul>
+        <p><strong>Nous ne vendons jamais vos données à des tiers.</strong></p>
+
+        <h2 class="h4 mt-4 mb-3">4. Hébergement et sécurité</h2>
+        <p>Vos données sont hébergées sur des serveurs sécurisés situés dans l'Union européenne chez LWS.</p> {# Confirmation hébergement #}
+        <p>Des mesures techniques et organisationnelles sont mises en place pour protéger vos données contre tout accès non autorisé, altération, perte ou divulgation.</p>
+
+        <h2 class="h4 mt-4 mb-3">5. Utilisation de l'intelligence artificielle</h2>
+        <p>Les données saisies peuvent être temporairement transmises à un modèle d'IA (comme ChatGPT via l'API d'OpenAI) pour générer des analyses.</p>
+        <p>Les données transmises sont anonymisées autant que possible, et ne sont pas utilisées à des fins d'entraînement par OpenAI (conformément à leurs CGU).</p>
+        <div class="alert alert-warning d-flex align-items-center small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <div>Nous vous invitons à ne jamais soumettre d'informations confidentielles, sensibles ou nominatives non nécessaires à l'analyse.</div>
+        </div>
+
+        <h2 class="h4 mt-4 mb-3">6. Cookies</h2>
+        <p>Nous utilisons uniquement des cookies fonctionnels et analytiques anonymes (Matomo, Plausible ou équivalent). Vous pouvez refuser leur utilisation via le bandeau cookie.</p> {# TODO: Implémenter un bandeau cookie si nécessaire #}
+
+        <h2 class="h4 mt-4 mb-3">7. Durée de conservation</h2>
+         <ul class="list-unstyled ms-3">
+            <li><i class="bi bi-clock-history text-secondary me-2"></i>Données de projet : conservées 12 mois après la dernière activité</li>
+            <li><i class="bi bi-clock-history text-secondary me-2"></i>Données techniques : 6 mois</li>
+            <li><i class="bi bi-clock-history text-secondary me-2"></i>Données liées à la facturation : selon les obligations légales (10 ans)</li>
+        </ul>
+
+        <h2 class="h4 mt-4 mb-3">8. Vos droits</h2>
+        <p>Conformément au RGPD, vous pouvez à tout moment :</p>
+         <ul class="list-unstyled ms-3">
+            <li><i class="bi bi-arrow-right-short text-primary me-1"></i>Accéder à vos données</li>
+            <li><i class="bi bi-arrow-right-short text-primary me-1"></i>Demander leur rectification ou leur suppression</li>
+            <li><i class="bi bi-arrow-right-short text-primary me-1"></i>Demander la limitation du traitement</li>
+            <li><i class="bi bi-arrow-right-short text-primary me-1"></i>Retirer votre consentement (si applicable)</li>
+        </ul>
+        <p>Pour toute demande, contactez-nous à : <a href="mailto:contact@benedicte.io">contact@benedicte.io</a></p>
+
+        <h2 class="h4 mt-4 mb-3">9. Sous-traitants utilisés</h2>
+         <ul class="list-unstyled ms-3">
+            <li><i class="bi bi-hdd-stack text-secondary me-2"></i>OpenAI (analyse IA via API) – États-Unis (avec garanties RGPD type DPA/SCC)</li>
+            <li><i class="bi bi-hdd-stack text-secondary me-2"></i>LWS (hébergement) - France</li>
+            <li><i class="bi bi-hdd-stack text-secondary me-2"></i>Outil de facturation, Stripe – Irlande / USA (avec garanties RGPD)</li>
+            {# Ajouter d'autres si pertinent (ex: service d'email transactionnel) #}
+        </ul>
+        <p>Chacun de nos prestataires s'engage contractuellement à respecter la confidentialité et la sécurité de vos données.</p>
+
+        <h2 class="h4 mt-4 mb-3">10. Modifications</h2>
+        <p>Nous nous réservons le droit de modifier cette politique à tout moment. Les utilisateurs seront informés de toute modification significative par email ou via une notification sur le site.</p>
+
+    </div> {# Fin legal-page-content #}
+</div> {# Fin Container #}
 {% endblock %}
