@@ -29,3 +29,5 @@ staticfiles/
 
 # Fichiers média uploadés (si nécessaire)
 mediafiles/
+
+documentation.serveur.md

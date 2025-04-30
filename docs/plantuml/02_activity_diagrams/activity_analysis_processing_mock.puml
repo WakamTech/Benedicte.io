@@ -1,0 +1,96 @@
+@startuml Use Case Benedicte.io
+
+' --- Style et Apparence (Optionnel mais recommandé) ---
+' Utiliser une skin (thème) pour un look plus moderne
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 12
+skinparam actorBorderColor black
+skinparam actorBackgroundColor #ADD8E6 ' Light Blue
+skinparam usecaseBorderColor #005A9C ' Notre bleu primaire
+skinparam usecaseBackgroundColor #E6F0F7 ' Bleu très pâle
+skinparam arrowColor #444444
+
+' --- Acteurs ---
+actor "Utilisateur (Client)" as User
+' actor "Administrateur" as Admin # Optionnel si on veut modéliser l'admin plus tard
+
+' --- Package Principal du Système ---
+rectangle "SaaS Benedicte.io" {
+
+    ' --- Cas d'utilisation principaux ---
+    usecase "S'inscrire via Paiement" as UC_Register
+    usecase "Se Connecter / Se Déconnecter" as UC_Auth
+    usecase "Gérer son Profil" as UC_Profile
+    usecase "Remplir Données Entreprise\n(Onboarding)" as UC_Onboarding
+    usecase "Demander une Analyse Guidée" as UC_RequestAnalysis
+    usecase "Consulter Tableau de Bord" as UC_Dashboard
+    usecase "Télécharger Rapport\n(PDF/Excel)" as UC_Download
+    usecase "Consulter Pages Statiques\n(FAQ, CGV, etc.)" as UC_StaticPages
+    usecase "Gérer l'Abonnement\n(Portail Stripe)" as UC_ManageSub
+
+    ' --- Cas d'utilisation liés à la gestion du profil (extend ou include) ---
+    usecase "Modifier Infos Perso" as UC_UpdateInfo
+    usecase "Changer Mot de Passe" as UC_ChangePass
+    usecase "Supprimer Compte" as UC_DeleteAccount
+
+    ' --- Cas d'utilisation liés à l'Onboarding ---
+    usecase "Saisir Infos Société" as UC_Onboard_Company
+    usecase "Saisir Données CA" as UC_Onboard_Revenue
+    usecase "Saisir Charges" as UC_Onboard_Costs
+    usecase "Saisir Produits/Services" as UC_Onboard_Products
+
+     ' --- Cas d'utilisation liés à la Demande d'Analyse ---
+    usecase "Choisir Axe d'Analyse" as UC_SelectAxis
+    usecase "Répondre aux Questions Guidées" as UC_AnswerQuestions
+    usecase "Décrire Cas 'Autre'" as UC_DescribeOther
+
+}
+
+' --- Relations Acteur -> Cas d'Utilisation ---
+User -- UC_Register
+User -- UC_Auth
+User -- UC_Profile
+User -- UC_Onboarding
+User -- UC_RequestAnalysis
+User -- UC_Dashboard
+User -- UC_Download
+User -- UC_StaticPages
+User -- UC_ManageSub
+
+' --- Relations entre Cas d'Utilisation (Include / Extend) ---
+
+' Gérer profil inclut ces sous-cas
+UC_Profile ..> UC_UpdateInfo : <<include>> ' Ou <<extend>> selon la logique
+UC_Profile ..> UC_ChangePass : <<include>>
+UC_Profile ..> UC_DeleteAccount : <<include>>
+UC_Profile ..> UC_ManageSub : <<include>> ' Gérer l'abonnement fait partie du profil
+
+' L'onboarding est composé de plusieurs étapes (on peut utiliser include ou les lier séquentiellement si on préfère)
+UC_Onboarding ..> UC_Onboard_Company : <<include>>
+UC_Onboarding ..> UC_Onboard_Revenue : <<include>>
+UC_Onboarding ..> UC_Onboard_Costs : <<include>>
+UC_Onboarding ..> UC_Onboard_Products : <<include>>
+' Alternative: Lier en séquence (moins standard pour UC mais possible)
+' UC_Onboard_Company --> UC_Onboard_Revenue
+' UC_Onboard_Revenue --> UC_Onboard_Costs
+' UC_Onboard_Costs --> UC_Onboard_Products
+
+' La demande d'analyse inclut le choix de l'axe et la réponse (guidée OU autre)
+UC_RequestAnalysis ..> UC_SelectAxis : <<include>>
+UC_RequestAnalysis ..> UC_AnswerQuestions : <<include>> ' Si axe != Autre
+UC_RequestAnalysis ..> UC_DescribeOther : <<include>> ' Si axe == Autre
+
+' Pour consulter/télécharger, il faut avoir fait une demande
+UC_Dashboard -- UC_RequestAnalysis : <<extends>> ' Ou dépendance simple
+UC_Download -- UC_RequestAnalysis : <<extends>>
+
+' L'inscription est nécessaire pour la plupart des actions
+UC_Auth .. UC_Register : <<extends>> ' On ne peut se connecter qu'après inscription
+UC_Onboarding -- UC_Register
+UC_RequestAnalysis -- UC_Register
+
+' Optionnel: Ajout de notes
+' note right of UC_Register : Paiement Stripe obligatoire
+' note bottom of UC_AnswerQuestions : Basé sur l'axe choisi
+
+@enduml

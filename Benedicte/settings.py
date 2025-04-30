@@ -155,8 +155,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Configuration Email (Backend Console pour Développement)
 # Voir : https://docs.djangoproject.com/en/stable/topics/email/#console-backend
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
+#     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# else:
     # --- CONFIGURATION PRODUCTION (à adapter selon votre fournisseur) ---
     # Exemple avec variables d'environnement pour un service SMTP
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

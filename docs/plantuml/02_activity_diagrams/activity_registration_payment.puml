@@ -1,0 +1,190 @@
+@startuml Flux Inscription et Paiement
+
+' --- Style ---
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 11
+skinparam activityBorderColor #005A9C
+skinparam activityBackgroundColor #E6F0F7
+skinparam activityArrowColor #444444
+skinparam partitionBorderColor gray
+skinparam partitionBackgroundColor #F8F8F8
+
+' --- Titre ---
+title Diagramme d'Activité : Flux d'Inscription et Paiement
+
+' --- Début du flux ---
+start
+
+' --- Partitions (Swimlanes) ---
+|Utilisateur|
+    :Clique sur "Créer un compte\n(9,99€/mois)";
+
+|Navigateur|
+    :Envoie requête GET\n /subscribe/start/;
+
+|Backend Django|
+    :Reçoit requête (start_stripe_checkout view);
+    :Vérifie config Stripe (Clés, Price ID);
+    if (Configuration OK ?) then (Oui)
+        :Appelle API Stripe\n(checkout.Session.create);
+        note left
+            Mode: subscription
+            Price ID: configuré
+            Success URL: /payment-success/?session_id={ID}
+            Cancel URL: /payment-cancelled/
+        end note
+    else (Non)
+        :Prépare message d'erreur;
+        :Redirige vers Accueil\n(avec message erreur);
+        stop
+    endif
+
+|Stripe|
+    :Crée la Session Checkout;
+    :Retourne l'URL de la session;
+
+|Backend Django|
+    :Reçoit l'URL de session;
+    :Retourne une redirection HTTP 303\nvers l'URL Stripe;
+
+|Navigateur|
+    :Suit la redirection vers Stripe;
+    :Affiche la page de paiement Stripe;
+
+|Utilisateur|
+    :Saisit les informations de paiement;
+    if (Paiement Validé ?) then (Oui)
+        :Clique sur "Payer";
+    else (Non - Annulation)
+        :Clique sur "Retour" ou ferme;
+        |Stripe|
+            :Redirige vers Cancel URL;
+        |Navigateur|
+            :Envoie requête GET\n/payment-cancelled/;
+        |Backend Django|
+            :Reçoit requête (payment_cancelled view);
+            :Rend la page d'annulation;
+        |Navigateur|
+            :Affiche la page d'annulation;
+        |Utilisateur|
+            :Voit le message d'annulation;
+        stop
+    endif
+
+|Stripe|
+    :Traite le paiement;
+    :Marque la session comme 'completed';
+    :Redirige vers Success URL\n(avec session_id);
+    :**(Asynchrone)** Envoie événement\n'checkout.session.completed'\nau Webhook configuré;
+    note right: Peut arriver avant ou après\nla redirection Success URL !
+
+' --- Traitement parallèle/asynchrone ---
+fork
+    ' --- Branche Redirection Succès ---
+    |Navigateur|
+        :Envoie requête GET\n/payment-success/?session_id=...;
+    |Backend Django|
+        :Reçoit requête (payment_success view);
+        :Récupère session_id (optionnel);
+        :Rend la page de succès;
+        note right: N'attend PAS le webhook.\nAffiche un message d'attente email.
+    |Navigateur|
+        :Affiche la page de succès;
+    |Utilisateur|
+        :Voit le message "Paiement réussi,\n vérifiez vos emails";
+
+fork again
+    ' --- Branche Traitement Webhook ---
+    |Backend Django|
+        :Reçoit requête POST\nsur /stripe-webhook/;
+        note left: Arrive de Stripe (via stripe listen en local)
+        :Vérifie la signature Stripe;
+        if (Signature Valide ?) then (Oui)
+            :Parse l'événement;
+            if (Événement == 'checkout.session.completed'?) then (Oui)
+                :Extrait email, customer_id, sub_id;
+                :Vérifie si utilisateur existe (par email);
+                if (Utilisateur existe ?) then (Non)
+                    #MediumSeaGreen:Crée CustomUser\n(email, IDs Stripe, status='active');
+                    note right: Mot de passe NON défini. is_active=True.
+                    :Appelle send_set_password_email(user);
+                else (Oui)
+                    #Orange:Met à jour infos Stripe\n(customer_id, sub_id, status='active');
+                    if (Mot de passe non défini ?) then (Oui)
+                         :Appelle send_set_password_email(user);
+                    endif
+                endif
+                :Log succès traitement;
+            else (Non)
+                 :Ignore l'événement (ou log);
+            endif
+            :Retourne HTTP 200 OK à Stripe;
+        else (Non)
+            :Log erreur signature;
+            :Retourne HTTP 400 Bad Request;
+            stop ' Arrête CE flux webhook
+        endif
+
+    |Service Email (via Django)|
+        :Reçoit demande d'envoi;
+        :Génère l'email (texte/html)\navec lien create-password unique;
+        if (Backend Console ?) then (Oui)
+            :Affiche l'email dans la console;
+        else (Non - SMTP)
+            :Envoie l'email au serveur SMTP;
+        endif
+
+fork end
+
+' --- Suite pour l'utilisateur après réception email ---
+|Utilisateur|
+    :Reçoit l'email;
+    :Clique sur le lien "Définir mot de passe";
+
+|Navigateur|
+    :Envoie requête GET\n/create-password/<uid>/<token>/;
+
+|Backend Django|
+    :Reçoit requête (create_password_confirm view);
+    :Valide UID et Token;
+    if (Lien Valide ?) then (Oui)
+        :Affiche le formulaire SetPasswordForm;
+    else (Non)
+        :Affiche page "Lien Invalide";
+        stop
+    endif
+
+|Navigateur|
+    :Affiche le formulaire;
+
+|Utilisateur|
+    :Entre le nouveau mot de passe (x2);
+    :Soumet le formulaire;
+
+|Navigateur|
+    :Envoie requête POST\n/create-password/<uid>/<token>/;
+
+|Backend Django|
+    :Reçoit requête POST;
+    :Valide le formulaire SetPasswordForm;
+    if (Formulaire Valide ?) then (Oui)
+        :Définit le nouveau mot de passe pour l'utilisateur;
+        :Sauvegarde l'utilisateur;
+         #MediumSeaGreen: (Optionnel) Met is_active=True si ce n'était pas fait;
+        :Prépare message succès;
+        :Redirige vers la page de Connexion;
+    else (Non)
+        :Ré-affiche le formulaire\navec les erreurs;
+    endif
+
+|Navigateur|
+    :Suit la redirection vers Connexion (si succès);
+    :Affiche la page de Connexion (avec message succès);
+    ' Ou ré-affiche le formulaire (si échec)
+
+|Utilisateur|
+    :Voit le message succès et peut se connecter;
+
+stop
+
+@enduml
