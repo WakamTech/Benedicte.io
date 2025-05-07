@@ -31,3 +31,5 @@ staticfiles/
 mediafiles/
 
 documentation.serveur.md
+
+test.env.md

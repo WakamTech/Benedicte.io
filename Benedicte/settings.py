@@ -42,7 +42,7 @@ INSEE_CONSUMER_KEY = env('INSEE_CONSUMER_KEY', default=None) # Ajout de default=
 INSEE_CONSUMER_SECRET = env('INSEE_CONSUMER_SECRET', default=None) # Ajout de default=None
 OPENAI_API_KEY = env('OPENAI_API_KEY', default=None) # Ajout de default=None
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 # Gestion pour Render
 RENDER_EXTERNAL_HOSTNAME = env('RENDER_EXTERNAL_HOSTNAME', default=None)
